@@ -643,7 +643,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 #+END_SRC
 
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Org mode config]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el...
+#+BEGIN_SRC emacs-lisp :tangle post-init.el ...
   ;; Org mode is a major mode designed for organizing notes, planning, task
   ;; management, and authoring documents using plain text with a simple and
   ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
@@ -664,4 +664,71 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
        ;; (org-fontify-whole-heading-line t)
        ;; (org-fontify-quote-and-verse-blocks t)
        (org-startup-truncated t))
+#+END_SRC
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-markdown-mode-eg-readmemd-syntax][Markdown Mode]]
+
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+    ;; The markdown-mode package provides a major mode for Emacs for syntax
+    ;; highlighting, editing commands, and preview support for Markdown documents.
+    ;; It supports core Markdown syntax as well as extensions like GitHub Flavored
+    ;; Markdown (GFM).
+    (use-package markdown-mode
+        :commands (gfm-mode
+                   gfm-view-mode
+                   markdown-mode
+                   markdown-view-mode)
+          :mode (("\\.markdown\\'" . markdown-mode)
+                 ("\\.md\\'" . markdown-mode)
+                 ("README\\.md\\'" . gfm-mode))
+            :bind
+              (:map markdown-mode-map
+                            ("C-c C-e" . markdown-do)))
+
+  ;; Automatically generate a table of contents when editing Markdown files
+  (use-package markdown-toc
+      :ensure t
+        :commands (markdown-toc-generate-toc
+                   markdown-toc-generate-or-refresh-toc
+
+                                             markdown-toc-delete-toc
+                                                          markdown-toc--toc-already-present-p)
+          :custom
+            (markdown-toc-header-toc-title "**Table of Contents**"))
+                          #+END_SRC
+
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  ;; Tree-sitter in Emacs is an incremental parsing system introduced in Emacs 29
+  ;; that provides precise, high-performance syntax highlighting. It supports a
+  ;; broad set of programming languages, including Bash, C, C++, C#, CMake, CSS,
+  ;; Dockerfile, Go, Java, JavaScript, JSON, Python, Rust, TOML, TypeScript, YAML,
+  ;; Elisp, Lua, Markdown, and many others.
+  (use-package treesit-auto
+      :ensure t
+        :custom
+          (treesit-auto-install 'prompt)
+            :config
+              (treesit-auto-add-to-auto-mode-alist 'all)
+                (global-treesit-auto-mode))
+#+END_SRC
+
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (use-package buffer-terminator
+      :ensure t
+        :custom
+          ;; Enable/Disable verbose mode to log buffer cleanup events
+          (buffer-terminator-verbose nil)
+
+            ;; Set the inactivity timeout (in seconds) after which buffers are considered
+            ;; inactive (default is 30 minutes):
+            (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+              ;; Define how frequently the cleanup process should run (default is every 10
+              ;; minutes):
+              (buffer-terminator-interval (* 10 60)) ; 10 minutes
+
+                :config
+                  (buffer-terminator-mode 1))
+
 #+END_SRC
