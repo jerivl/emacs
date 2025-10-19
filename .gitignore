@@ -27,9 +27,14 @@ tramp
 # elpa packages
 /elpa/
 
+# Runtime configs
+/var/
+
 # reftex files
 *.rel
 
+# All .el files are tangled by org-babel config.org
+*.el
 # AUCTeX auto folder
 /auto/
 

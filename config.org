@@ -1,0 +1,50 @@
+#+title: jeri's emacs config as a literate program
+
+* Introduction
+TODO Transclude README.md
+
+** Boilerplate to ensure org files tangle correctly.
+#+name: elisp-header
+#+BEGIN_SRC emacs-lisp
+;;; -*- lexical-binding: t -*-
+
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el :noweb yes
+<<elisp-header>>
+(message "ok")
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle post-early-init.el :noweb yes
+<<elisp-header>>
+(message "ok")
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle pre-init.el :noweb yes
+<<elisp-header>>
+(message "ok")
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle post-init.el :noweb yes
+<<elisp-header>>
+(message "ok")
+#+END_SRC
+
+
+* minimal-emacs.d suggested configurations
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#customizations-ui-pre-early-initel][Customizations: UI (pre-early-init.el)]]
+
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar]]
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+  ; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
+  (setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
+
+#+END_SRC
+
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#reducing-clutter-in-emacsd-by-redirecting-files-to-emacsdvar][Direct runtime config files to ~/.emacs.d/var/]]
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+  ; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
+  (setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
+  (setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
+#+END_SRC
+
