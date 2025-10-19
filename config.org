@@ -496,6 +496,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (mapc #'disable-theme custom-enabled-themes)  ; Disable all active themesOA
   (load-theme 'modus-operandi t)  ; Load the built-in theme
+  (modus-select-theme modus-vivendi-deuteranopia)
 #+END_SRC
 
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
