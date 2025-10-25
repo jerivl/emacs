@@ -3,7 +3,7 @@
 * Introduction
 TODO Transclude README.md
 
-** Boilerplate to ensure org files tangle correctly.
+** Boilerplate to ensure .el files have proper headers.
 #+name: elisp-header
 #+BEGIN_SRC emacs-lisp
 ;;; -*- lexical-binding: t -*-
@@ -250,64 +250,55 @@ minimal-emacs.d suggests the default auto save mode functionality, but I grew to
 
 #+END_SRC
 
-*** DONE ? https://github.com/twlz0ne/acm-terminal Yes this is needed for native compilation on macOS
 minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark stack, but I'd prefer a more out of the box experience offered by lsp-bridge for autocompletion
 [[https://github.com/manateelazycat/lsp-bridge?tab=readme-ov-file][lsp-bridge + yasnippet]]
 
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-    ;; The official collection of snippets for yasnippet.
-    (use-package yasnippet-snippets
-    :ensure t
-    :after yasnippet)
+;; The official collection of snippets for yasnippet.
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
 
-    ;; YASnippet is a template system designed that enhances text editing by
-    ;; enabling users to define and use snippets. When a user types a short
-    ;; abbreviation, YASnippet automatically expands it into a full template, which
-    ;; can include placeholders, fields, and dynamic content.
-    ; LSP Bridge depends on yasnippet ao its config is also here
-    (unless (package-installed-p 'yasnippet)
-    (use-package yasnippet
-    :ensure t
-    :commands (yas-minor-mode
-               yas-global-mode)
+;; YASnippet is a template system designed that enhances text editing by
+;; enabling users to define and use snippets. When a user types a short
+;; abbreviation, YASnippet automatically expands it into a full template, which
+;; can include placeholders, fields, and dynamic content.
+(use-package yasnippet
+  :ensure t
+  :commands (yas-minor-mode
+             yas-global-mode)
 
-    :hook
-    (after-init . yas-global-mode)
+  :hook
+  (after-init . yas-global-mode)
 
-    :custom
-    (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
-    (yas-also-indent-empty-lines t)
-    (yas-snippet-revival nil)  ; Setting this to t causes issues with undo
-    (yas-wrap-around-region nil) ; Do not wrap region when expanding snippets
-    ;; (yas-triggers-in-field nil)  ; Disable nested snippet expansion
-    ;; (yas-indent-line 'fixed) ; Do not auto-indent snippet content
-    ;; (yas-prompt-functions '(yas-no-prompt))  ; No prompt for snippet choices
+  :custom
+  (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
+  (yas-also-indent-empty-lines t)
+  (yas-snippet-revival nil)  ; Setting this to t causes issues with undo
+  (yas-wrap-around-region nil) ; Do not wrap region when expanding snippets
+  ;; (yas-triggers-in-field nil)  ; Disable nested snippet expansion
+  (yas-indent-line 'fixed) ; Do not auto-indent snippet content
+  ;; (yas-prompt-functions '(yas-no-prompt))  ; No prompt for snippet choices
 
-    :init
-    ;; Suppress verbose messages
-    (setq yas-verbosity 0)))
+  :init
+  ;; Suppress verbose messages
+  (setq yas-verbosity 0))
 
-      ;(use-package lsp-bridge :ensure (lsp-bridge :host github :repo "manateelazycat/lsp-bridge"
-      ;          :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-      ;          :build (:not compile))
-      ;          :init (global-lsp-bridge-mode))
-
-     (use-package lsp-bridge
-       :ensure (lsp-bridge
-                    :host github
-                    :repo "manateelazycat/lsp-bridge"
-                    :files ("*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources"))
-                    :init
-                    (global-lsp-bridge-mode))
-      (unless (display-graphic-p)
-        (use-package popon :ensure
-          (popon :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
-        (use-package acm-terminal :ensure
-          (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
+       (use-package lsp-bridge
+         :ensure (lsp-bridge
+                      :host github
+                      :repo "manateelazycat/lsp-bridge"
+                      :files ("*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources"))
+                      :init
+                      (global-lsp-bridge-mode))
+        (unless (display-graphic-p)
+          (use-package popon :ensure
+            (popon :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
+          (use-package acm-terminal :ensure
+            (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
 #+END_SRC
 
 
-*** DONE I might add Vertico, Orderless, Consult, Embark, Marginalia for discoverability in the minibuffer. Really just depends on how lsp-bridge goes
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-vertico-consult-and-embark][Vertico, Consult, Embark]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Vertico provides a vertical completion interface, making it easier to
@@ -463,7 +454,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
    consult--source-recent-file consult--source-project-recent-file
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
-  (setq consult-narrow-key "<"))
+   (setq consult-narrow-key "<"))
 #+END_SRC
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#code-folding][Outline-Indent based code folding]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -533,22 +524,21 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
   ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
   ;; system, providing more convenient undo/redo functionality.
   (use-package undo-fu
-      :ensure t
-        :commands (undo-fu-only-undo
-                                undo-fu-only-redo
-                                             undo-fu-only-redo-all
-                                                          undo-fu-disable-checkpoint)
-          :config
-            (global-unset-key (kbd "C-z"))
-              (global-set-key (kbd "C-z") 'undo-fu-only-undo)
-                (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
+  :ensure t
+  :commands (undo-fu-only-undo
+             undo-fu-only-redo
+             undo-fu-only-redo-all
+             undo-fu-disable-checkpoint)
+  :config (global-unset-key (kbd "C-z"))
+          (global-set-key (kbd "C-z") 'undo-fu-only-undo)
+          (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
 
   ;; The undo-fu-session package complements undo-fu by enabling the saving
   ;; and restoration of undo history across Emacs sessions, even after restarting.
   (use-package undo-fu-session
       :ensure t
-        :commands undo-fu-session-global-mode
-          :hook (after-init . undo-fu-session-global-mode))
+      :commands undo-fu-session-global-mode
+      :hook (after-init . undo-fu-session-global-mode))
 #+END_SRC
 
 [[https://github.com/meow-edit/meow][Meow: modal editing]]
@@ -643,7 +633,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 #+END_SRC
 
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Org mode config]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el ...
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
   ;; Org mode is a major mode designed for organizing notes, planning, task
   ;; management, and authoring documents using plain text with a simple and
   ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
@@ -677,24 +667,23 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
                    gfm-view-mode
                    markdown-mode
                    markdown-view-mode)
-          :mode (("\\.markdown\\'" . markdown-mode)
-                 ("\\.md\\'" . markdown-mode)
-                 ("README\\.md\\'" . gfm-mode))
-            :bind
-              (:map markdown-mode-map
-                            ("C-c C-e" . markdown-do)))
+        :mode (("\\.markdown\\'" . markdown-mode)
+              ("\\.md\\'" . markdown-mode)
+              ("README\\.md\\'" . gfm-mode))
+        :bind (:map markdown-mode-map
+              ("C-c C-e" . markdown-do)))
 
   ;; Automatically generate a table of contents when editing Markdown files
   (use-package markdown-toc
       :ensure t
-        :commands (markdown-toc-generate-toc
-                   markdown-toc-generate-or-refresh-toc
-
-                                             markdown-toc-delete-toc
-                                                          markdown-toc--toc-already-present-p)
-          :custom
-            (markdown-toc-header-toc-title "**Table of Contents**"))
-                          #+END_SRC
+      :commands
+      (markdown-toc-generate-toc
+      markdown-toc-generate-or-refresh-toc
+      markdown-toc-delete-toc
+      markdown-toc--toc-already-present-p)
+      :custom
+      (markdown-toc-header-toc-title "**Table of Contents**"))
+#+END_SRC
 
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -704,31 +693,196 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
   ;; Dockerfile, Go, Java, JavaScript, JSON, Python, Rust, TOML, TypeScript, YAML,
   ;; Elisp, Lua, Markdown, and many others.
   (use-package treesit-auto
-      :ensure t
-        :custom
-          (treesit-auto-install 'prompt)
-            :config
-              (treesit-auto-add-to-auto-mode-alist 'all)
-                (global-treesit-auto-mode))
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 #+END_SRC
 
 [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (use-package buffer-terminator
       :ensure t
-        :custom
-          ;; Enable/Disable verbose mode to log buffer cleanup events
-          (buffer-terminator-verbose nil)
+      :custom
+      ;; Enable/Disable verbose mode to log buffer cleanup events
+      (buffer-terminator-verbose nil)
 
-            ;; Set the inactivity timeout (in seconds) after which buffers are considered
-            ;; inactive (default is 30 minutes):
-            (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+      ;; Set the inactivity timeout (in seconds) after which buffers are considered
+      ;; inactive (default is 30 minutes):
+      (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
 
-              ;; Define how frequently the cleanup process should run (default is every 10
-              ;; minutes):
-              (buffer-terminator-interval (* 10 60)) ; 10 minutes
+      ;; Define how frequently the cleanup process should run (default is every 10
+      ;; minutes):
+      (buffer-terminator-interval (* 10 60)) ; 10 minutes
+      :config
+      (buffer-terminator-mode 1))
 
-                :config
-                  (buffer-terminator-mode 1))
+#+END_SRC
 
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; A file and project explorer for Emacs that displays a structured tree
+;; layout, similar to file browsers in modern IDEs. It functions as a sidebar
+;; in the left window, providing a persistent view of files, projects, and
+;; other elsure t
+  :commands (treemacs
+             treemacs-select-window
+             treemacs-delete-other-windows
+             treemacs-select-directory
+             treemacs-bookmark
+             treemacs-find-file
+             treemacs-find-tag)
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag))
+
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+
+  :config
+  (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+        treemacs-deferred-git-apply-delay        0.5
+        treemacs-directory-name-transformer      #'identity
+        treemacs-display-in-side-window          t
+        treemacs-eldoc-display                   'simple
+        treemacs-file-event-delay                2000
+        treemacs-file-extension-regex            treemacs-last-period-regex-value
+        treemacs-file-follow-delay               0.2
+        treemacs-file-name-transformer           #'identity
+        treemacs-follow-after-init               t
+        treemacs-expand-after-init               t
+        treemacs-find-workspace-method           'find-for-file-or-pick-first
+        treemacs-git-command-pipe                ""
+        treemacs-goto-tag-strategy               'refetch-index
+        treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+        treemacs-hide-dot-git-directory          t
+        treemacs-indentation                     2
+        treemacs-indentation-string              " "
+        treemacs-is-never-other-window           nil
+        treemacs-max-git-entries                 5000
+        treemacs-missing-project-action          'ask
+        treemacs-move-files-by-mouse-dragging    t
+        treemacs-move-forward-on-expand          nil
+        treemacs-no-png-images                   nil
+        treemacs-no-delete-other-windows         t
+        treemacs-project-follow-cleanup          nil
+        treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+        treemacs-position                        'left
+        treemacs-read-string-input               'from-child-frame
+        treemacs-recenter-distance               0.1
+        treemacs-recenter-after-file-follow      nil
+        treemacs-recenter-after-tag-follow       nil
+        treemacs-recenter-after-project-jump     'always
+        treemacs-recenter-after-project-expand   'on-distance
+        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+        treemacs-project-follow-into-home        nil
+        treemacs-show-cursor                     nil
+        treemacs-show-hidden-files               t
+        treemacs-silent-filewatch                nil
+        treemacs-silent-refresh                  nil
+        treemacs-sorting                         'alphabetic-asc
+        treemacs-select-when-already-in-treemacs 'move-back
+        treemacs-space-between-root-nodes        t
+        treemacs-tag-follow-cleanup              t
+        treemacs-tag-follow-delay                1.5
+        treemacs-text-scale                      nil
+        treemacs-user-mode-line-format           nil
+        treemacs-user-header-line-format         nil
+        treemacs-wide-toggle-width               70
+        treemacs-width                           35
+        treemacs-width-increment                 1
+        treemacs-width-is-initially-locked       t
+        treemacs-workspace-switch-cleanup        nil)
+
+  ;; The default width and height of the icons is 22 pixels. If you are
+  ;; using a Hi-DPI display, uncomment this to double the icon size.
+  ;; (treemacs-resize-icons 44)
+
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always)
+
+  ;;(when treemacs-python-executable
+  ;;  (treemacs-git-commit-diff-mode t))
+
+  (pcase (cons (not (null (executable-find "git")))
+               (not (null treemacs-python-executable)))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple)))
+
+  (treemacs-hide-gitignored-files-mode nil))
+
+
+#+END_SRC
+
+* Web
+[[https://github.com/fxbois/web-mode/tree/master][web-mode]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+      (use-package web-mode
+      :ensure t
+      :config
+      (require 'web-mode)
+      (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+      (defun my-web-mode-hook ()
+        "Hooks for Web mode."
+        (setq web-mode-markup-indent-offset 2)
+        (setq web-mode-css-indent-offset 2)
+        (setq web-mode-code-indent-offset 4)
+        (setq web-mode-comment-style 2)
+        (setq web-mode-enable-auto-pairing t)
+        (setq web-mode-enable-css-colorization t)
+        (setq web-mode-enable-block-face t)
+        (setq web-mode-enable-part-face t)
+        (setq web-mode-enable-comment-interpolation t)
+        (setq web-mode-enable-current-element-highlight t)
+        (setq web-mode-engines-alist
+          '(("astro"    . "\\.astro\\'")
+            ("svelte"  . "\\.svelte\\.")))
+        (add-hook 'local-write-file-hooks
+                (lambda ()
+                   (delete-trailing-whitespace)
+                   nil)))
+      (add-hook 'web-mode-hook  'my-web-mode-hook))
+
+    (use-package svelte-mode :ensure t )
+    (use-package astro-ts-mode :ensure t )
+
+#+END_SRC
+
+[[https://github.com/merrickluo/lsp-tailwindcss/tree/master][Tailwind-lsp]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package ensure: '(lsp-tailwindcss :host github :repo "merrickluo/lsp-tailwindcss"))
+#+END_SRC
+
+Since I use IHP / yesod / miso, haskell is part of my webdev workflow
+[[https://github.com/haskell/haskell-mode/tree/bd89438b0e6e6b6877d635699e265da85e85ca06][haskell-mode]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (use-package haskell-mode :ensure t )
+#+END_SRC
+
+Sorting CSS attributes as part of linting is nice
+[[https://github.com/P233/postcss-sorting.el/tree/deb0c935d2904c11a965758a9aee5a0e905f21fc][postcss-sorting]]
+
+* Data
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+# Edit
+(use-package csv-mode :ensure t)
 #+END_SRC
