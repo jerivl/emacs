@@ -1,8 +1,8 @@
 #+title: jeri's emacs config as a literate program
 
-* Introduction
-TODO Transclude README.md
 
+* TODO Introduction Transclude README.md
+minimal-emacs.d suggested configurations are used heavily. Source is linked if available.
 ** Boilerplate to ensure .el files have proper headers.
 #+name: elisp-header
 #+BEGIN_SRC emacs-lisp
@@ -29,29 +29,9 @@ TODO Transclude README.md
 <<elisp-header>>
 (message "ok")
 #+END_SRC
-
-
-* minimal-emacs.d suggested configurations
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#customizations-ui-pre-early-initel][Customizations: UI (pre-early-init.el)]]
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar]]
-#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-  ; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
-  (setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
-
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#reducing-clutter-in-emacsd-by-redirecting-files-to-emacsdvar][Direct runtime config files to ~/.emacs.d/var/]]
-#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-  ; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
-  (setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
-  (setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
-#+END_SRC
-
-
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#customizations-packages-post-initel][Customizations: Packages (post-init.el)]]
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Assist native compilation with compile-angel]]
+** TODO Guardrail
+* Runtime-Internals
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Assist native compilation with compile-angel]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ;; Native compilation enhances Emacs performance by converting Elisp code into
   ;; native machine code, resulting in faster execution and improved
@@ -91,10 +71,69 @@ TODO Transclude README.md
   (compile-angel-on-load-mode 1))
 
 #+END_SRC
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-elpaca-package-manager][Elpaca package maanger]]
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+  ;; By default, minimal-emacs-package-initialize-and-refresh is set to t, which
+  ;; makes minimal-emacs.d call the built-in package manager. Since Elpaca will
+  ;; replace the package manager, there is no need to call it.
+  (setq minimal-emacs-package-initialize-and-refresh nil)
 
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Autorevert, recent files, minibuffer history ]]
+#+END_SRC
+#+BEGIN_SRC emacs-lisp :tangle pre-init.el
+  ;; Elpaca bootstrap
+  (defvar elpaca-installer-version 0.11)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (<= emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
+
+  ;; Optional: Install use-package support
+  ;; If you enable elpaca-use-package, some use-package definitions, such as
+  ;; Vertico's, may need modifications. See the following discussion for details:
+  ;; https://github.com/jamescherti/minimal-emacs.d/issues/54
+  ;;
+  (elpaca elpaca-use-package
+  (elpaca-use-package-mode))
+
+#+END_SRC
+
+* Disk management
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Autorevert, recent files, minibuffer history ]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; Auto-revert in Emacs is a feature that automatically updates the
+;; Auto-revert in Emacs is a feature that automatically updates the
 ;; contents of a buffer to reflect changes made to the underlying file
 ;; on disk.
 (use-package autorevert
@@ -165,93 +204,92 @@ TODO Transclude README.md
 #+END_SRC
 
 minimal-emacs.d suggests the default auto save mode functionality, but I grew to like the function implemented in Emacs Bedrock
-*** [[https://codeberg.org/ashton314/emacs-bedrock/raw/branch/main/init.el][Autosave to common flat directory (Emacs Bedrock)]]
+** [[https://codeberg.org/ashton314/emacs-bedrock/raw/branch/main/init.el][Autosave to common flat directory (Emacs Bedrock)]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; Don't litter file system with *~ backup files; put them all inside
-  ;; ~/.emacs.d/backup or wherever
-  (defun bedrock--backup-file-name (fpath)
-    "Return a new file path of a given file path.
-  If the new path's directories does not exist, create them."
-    (let* ((backupRootDir (concat user-emacs-directory "emacs-backup/"))
-           (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path
-           (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
-      (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
-      backupFilePath))
-  (setopt make-backup-file-name-function 'bedrock--backup-file-name)
+;; Don't litter file system with *~ backup files; put them all inside
+;; ~/.emacs.d/backup or wherever
+(defun bedrock--backup-file-name (fpath)
+  "Return a new file path of a given file path.
+If the new path's directories does not exist, create them."
+  (let* ((backupRootDir (concat user-emacs-directory "emacs-backup/"))
+         (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path
+         (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
+    (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
+    backupFilePath))
+(setopt make-backup-file-name-function 'bedrock--backup-file-name)
 
 
-  ;; The above creates nested directories in the backup folder. If
-  ;; instead you would like all backup files in a flat structure, albeit
-  ;; with their full paths concatenated into a filename, then you can
-  ;; use the following configuration:
-  ;; (Run `'M-x describe-variable RET backup-directory-alist RET' for more help)
-  ;;
-  (let ((backup-dir (expand-file-name "emacs-backup/" user-emacs-directory)))
-     (setopt backup-directory-alist `(("." . ,backup-dir))))
-
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-elpaca-package-manager][Elpaca package maanger]]
-#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-  ;; By default, minimal-emacs-package-initialize-and-refresh is set to t, which
-  ;; makes minimal-emacs.d call the built-in package manager. Since Elpaca will
-  ;; replace the package manager, there is no need to call it.
-  (setq minimal-emacs-package-initialize-and-refresh nil)
-
-#+END_SRC
-#+BEGIN_SRC emacs-lisp :tangle pre-init.el
-  ;; Elpaca bootstrap
-  (defvar elpaca-installer-version 0.11)
-  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref nil :depth 1 :inherit ignore
-                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-         (build (expand-file-name "elpaca/" elpaca-builds-directory))
-         (order (cdr elpaca-order))
-         (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (<= emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                    ,@(when-let* ((depth (plist-get order :depth)))
-                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                    ,(plist-get order :repo) ,repo))))
-                    ((zerop (call-process "git" nil buffer t "checkout"
-                                          (or (plist-get order :ref) "--"))))
-                    (emacs (concat invocation-directory invocation-name))
-                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                    ((require 'elpaca))
-                    ((elpaca-generate-autoloads "elpaca" repo)))
-              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-            (error "%s" (with-current-buffer buffer (buffer-string))))
-        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
-
-  ;; Optional: Install use-package support
-  ;; If you enable elpaca-use-package, some use-package definitions, such as
-  ;; Vertico's, may need modifications. See the following discussion for details:
-  ;; https://github.com/jamescherti/minimal-emacs.d/issues/54
-  ;;
-  (elpaca elpaca-use-package
-  (elpaca-use-package-mode))
+;; The above creates nested directories in the backup folder. If
+;; instead you would like all backup files in a flat structure, albeit
+;; with their full paths concatenated into a filename, then you can
+;; use the following configuration:
+;; (Run `'M-x describe-variable RET backup-directory-alist RET' for more help)
+;;
+(let ((backup-dir (expand-file-name "emacs-backup/" user-emacs-directory)))
+  (setopt backup-directory-alist `(("." . ,backup-dir))))
 
 #+END_SRC
 
-minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark stack, but I'd prefer a more out of the box experience offered by lsp-bridge for autocompletion
-*** [[https://github.com/manateelazycat/lsp-bridge?tab=readme-ov-file][lsp-bridge + yasnippet]]
+* Code augmentation
+** Linting
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; The stripspace Emacs package provides stripspace-local-mode, a minor mode
+;; that automatically removes trailing whitespace and blank lines at the end of
+;; the buffer when saving.
+(use-package stripspace
+  :ensure t
+  :commands stripspace-local-mode
+
+  ;; Enable for prog-mode-hook, text-mode-hook, conf-mode-hook
+  :hook ((prog-mode . stripspace-local-mode)
+         (text-mode . stripspace-local-mode)
+         (conf-mode . stripspace-local-mode))
+
+  :custom
+  ;; The `stripspace-only-if-initially-clean' option:
+  ;; - nil to always delete trailing whitespace.
+  ;; - Non-nil to only delete whitespace when the buffer is clean initially.
+  ;; (The initial cleanliness check is performed when `stripspace-local-mode'
+  ;; is enabled.)
+  (stripspace-only-if-initially-clean nil)
+
+  ;; Enabling `stripspace-restore-column' preserves the cursor's column position
+  ;; even after stripping spaces. This is useful in scenarios where you add
+  ;; extra spaces and then save the file. Although the spaces are removed in the
+  ;; saved file, the cursor remains in the same position, ensuring a consistent
+  ;; editing experience without affecting cursor placement.
+  (stripspace-restore-column t))
+#+END_SRC
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#asynchronous-code-formatting-without-cursor-disruption][Apheleia: aync code formatting]]
+
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Apheleia is an Emacs package designed to run code formatters (e.g., Shfmt,
+;; Black and Prettier) asynchronously without disrupting the cursor position.
+(use-package apheleia
+  :ensure t
+  :commands (apheleia-mode
+             apheleia-global-mode)
+  :hook ((prog-mode . apheleia-mode)))
+#+END_SRC
+
+** Completion
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  ;; Tree-sitter in Emacs is an incremental parsing system introduced in Emacs 29
+  ;; that provides precise, high-performance syntax highlighting. It supports a
+  ;; broad set of programming languages, including Bash, C, C++, C#, CMake, CSS,
+  ;; Dockerfile, Go, Java, JavaScript, JSON, Python, Rust, TOML, TypeScript, YAML,
+  ;; Elisp, Lua, Markdown, and many others.
+  (use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+#+END_SRC
+*** TODO Split and change to corfu [[https://github.com/manateelazycat/lsp-bridge?tab=readme-ov-file][lsp-bridge + yasnippet]]
 
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; The official collection of snippets for yasnippet.
@@ -298,6 +336,134 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
             (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
 #+END_SRC
 
+** Generation
+* Buffers
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs: sidebar filetree]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; A file and project explorer for Emacs that displays a structured tree
+;; layout, similar to file browsers in modern IDEs. It functions as a sidebar
+;; in the left window, providing a persistent view of files, projects, and
+;; other elsure t
+(use-package treemacs
+  :ensure t
+  :commands (treemacs
+             treemacs-select-window
+             treemacs-delete-other-windows
+             treemacs-select-directory
+             treemacs-bookmark
+             treemacs-find-file
+             treemacs-find-tag)
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag))
+
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+
+  :config
+  (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+        treemacs-deferred-git-apply-delay        0.5
+        treemacs-directory-name-transformer      #'identity
+        treemacs-display-in-side-window          t
+        treemacs-eldoc-display                   'simple
+        treemacs-file-event-delay                2000
+        treemacs-file-extension-regex            treemacs-last-period-regex-value
+        treemacs-file-follow-delay               0.2
+        treemacs-file-name-transformer           #'identity
+        treemacs-follow-after-init               t
+        treemacs-expand-after-init               t
+        treemacs-find-workspace-method           'find-for-file-or-pick-first
+        treemacs-git-command-pipe                ""
+        treemacs-goto-tag-strategy               'refetch-index
+        treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+        treemacs-hide-dot-git-directory          t
+        treemacs-indentation                     2
+        treemacs-indentation-string              " "
+        treemacs-is-never-other-window           nil
+        treemacs-max-git-entries                 5000
+        treemacs-missing-project-action          'ask
+        treemacs-move-files-by-mouse-dragging    t
+        treemacs-move-forward-on-expand          nil
+        treemacs-no-png-images                   nil
+        treemacs-no-delete-other-windows         t
+        treemacs-project-follow-cleanup          nil
+        treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+        treemacs-position                        'left
+        treemacs-read-string-input               'from-child-frame
+        treemacs-recenter-distance               0.1
+        treemacs-recenter-after-file-follow      nil
+        treemacs-recenter-after-tag-follow       nil
+        treemacs-recenter-after-project-jump     'always
+        treemacs-recenter-after-project-expand   'on-distance
+        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+        treemacs-project-follow-into-home        nil
+        treemacs-show-cursor                     nil
+        treemacs-show-hidden-files               t
+        treemacs-silent-filewatch                nil
+        treemacs-silent-refresh                  nil
+        treemacs-sorting                         'alphabetic-asc
+        treemacs-select-when-already-in-treemacs 'move-back
+        treemacs-space-between-root-nodes        t
+        treemacs-tag-follow-cleanup              t
+        treemacs-tag-follow-delay                1.5
+        treemacs-text-scale                      nil
+        treemacs-user-mode-line-format           nil
+        treemacs-user-header-line-format         nil
+        treemacs-wide-toggle-width               70
+        treemacs-width                           35
+        treemacs-width-increment                 1
+        treemacs-width-is-initially-locked       t
+        treemacs-workspace-switch-cleanup        nil)
+
+  ;; The default width and height of the icons is 22 pixels. If you are
+  ;; using a Hi-DPI display, uncomment this to double the icon size.
+  ;; (treemacs-resize-icons 44)
+
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always)
+
+  ;;(when treemacs-python-executable
+  ;;  (treemacs-git-commit-diff-mode t))
+
+  (pcase (cons (not (null (executable-find "git")))
+               (not (null treemacs-python-executable)))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple)))
+
+  (treemacs-hide-gitignored-files-mode nil))
+#+END_SRC
+
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (use-package buffer-terminator
+      :ensure t
+      :custom
+      ;; Enable/Disable verbose mode to log buffer cleanup events
+      (buffer-terminator-verbose nil)
+
+      ;; Set the inactivity timeout (in seconds) after which buffers are considered
+      ;; inactive (default is 30 minutes):
+      (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+      ;; Define how frequently the cleanup process should run (default is every 10
+      ;; minutes):
+      (buffer-terminator-interval (* 10 60)) ; 10 minutes
+      :config
+      (buffer-terminator-mode 1))
+
+#+END_SRC
+** Minibuffer
+*** TODO Move minibuffer history here
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-vertico-consult-and-embark][Vertico, Consult, Embark]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Vertico provides a vertical completion interface, making it easier to
@@ -455,91 +621,8 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
    :preview-key '(:debounce 0.4 any))
    (setq consult-narrow-key "<"))
 #+END_SRC
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#code-folding][Outline-Indent based code folding]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; The outline-indent Emacs package provides a minor mode that enables code
-;; folding based on indentation levels.
-;;
-;; In addition to code folding, *outline-indent* allows:
-;; - Moving indented blocks up and down
-;; - Indenting/unindenting to adjust indentation levels
-;; - Inserting a new line with the same indentation level as the current line
-;; - Move backward/forward to the indentation level of the current line
-;; - and other features.
-(use-package outline-indent
-  :ensure t
-  :commands outline-indent-minor-mode
 
-  :custom
-  (outline-indent-ellipsis " ▼")
-
-  :init
-  ;; The minor mode can also be automatically activated for a certain modes.
-  (add-hook 'python-mode-hook #'outline-indent-minor-mode)
-  (add-hook 'python-ts-mode-hook #'outline-indent-minor-mode)
-
-  (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
-  (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode))
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme: modus-operandi]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-  (mapc #'disable-theme custom-enabled-themes)  ; Disable all active themesOA
-  (load-theme 'modus-vivendi-deuteranopia t)  ; Load the built-in theme
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; The stripspace Emacs package provides stripspace-local-mode, a minor mode
-;; that automatically removes trailing whitespace and blank lines at the end of
-;; the buffer when saving.
-(use-package stripspace
-  :ensure t
-  :commands stripspace-local-mode
-
-  ;; Enable for prog-mode-hook, text-mode-hook, conf-mode-hook
-  :hook ((prog-mode . stripspace-local-mode)
-         (text-mode . stripspace-local-mode)
-         (conf-mode . stripspace-local-mode))
-
-  :custom
-  ;; The `stripspace-only-if-initially-clean' option:
-  ;; - nil to always delete trailing whitespace.
-  ;; - Non-nil to only delete whitespace when the buffer is clean initially.
-  ;; (The initial cleanliness check is performed when `stripspace-local-mode'
-  ;; is enabled.)
-  (stripspace-only-if-initially-clean nil)
-
-  ;; Enabling `stripspace-restore-column' preserves the cursor's column position
-  ;; even after stripping spaces. This is useful in scenarios where you add
-  ;; extra spaces and then save the file. Although the spaces are removed in the
-  ;; saved file, the cursor remains in the same position, ensuring a consistent
-  ;; editing experience without affecting cursor placement.
-  (stripspace-restore-column t))
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-undoredo][Undo-fu: one button redo]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
-  ;; system, providing more convenient undo/redo functionality.
-  (use-package undo-fu
-  :ensure t
-  :commands (undo-fu-only-undo
-             undo-fu-only-redo
-             undo-fu-only-redo-all
-             undo-fu-disable-checkpoint)
-  :config (global-unset-key (kbd "C-z"))
-          (global-set-key (kbd "C-z") 'undo-fu-only-undo)
-          (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
-
-  ;; The undo-fu-session package complements undo-fu by enabling the saving
-  ;; and restoration of undo history across Emacs sessions, even after restarting.
-  (use-package undo-fu-session
-      :ensure t
-      :commands undo-fu-session-global-mode
-      :hook (after-init . undo-fu-session-global-mode))
-#+END_SRC
-
+** Editing/Navigation
 *** [[https://github.com/meow-edit/meow][Meow: modal editing]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (use-package meow
@@ -631,249 +714,70 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
         (meow-global-mode 1))
 #+END_SRC
 
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Org mode config]]
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#code-folding][Outline-Indent based code folding]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; Org mode is a major mode designed for organizing notes, planning, task
-  ;; management, and authoring documents using plain text with a simple and
-  ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
-  ;; scheduling, deadlines, time tracking, and exporting to multiple formats
-  ;; including HTML, LaTeX, PDF, and Markdown.
-  (use-package org
-      :ensure t
-      :commands (org-mode org-version)
-      :mode
-      ("\\.org\\'" . org-mode)
-      :custom
-       (org-hide-leading-stars t)
-       (org-startup-indented t)
-       (org-adapt-indentation nil)
-       (org-edit-src-content-indentation 0)
-       ;; (org-fontify-done-headline t)
-       ;; (org-fontify-todo-headline t)
-       ;; (org-fontify-whole-heading-line t)
-       ;; (org-fontify-quote-and-verse-blocks t)
-       (org-startup-truncated t))
-#+END_SRC
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-markdown-mode-eg-readmemd-syntax][Markdown Mode]]
-
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-    ;; The markdown-mode package provides a major mode for Emacs for syntax
-    ;; highlighting, editing commands, and preview support for Markdown documents.
-    ;; It supports core Markdown syntax as well as extensions like GitHub Flavored
-    ;; Markdown (GFM).
-    (use-package markdown-mode
-        :commands (gfm-mode
-                   gfm-view-mode
-                   markdown-mode
-                   markdown-view-mode)
-        :mode (("\\.markdown\\'" . markdown-mode)
-              ("\\.md\\'" . markdown-mode)
-              ("README\\.md\\'" . gfm-mode))
-        :bind (:map markdown-mode-map
-              ("C-c C-e" . markdown-do)))
-
-  ;; Automatically generate a table of contents when editing Markdown files
-  (use-package markdown-toc
-      :ensure t
-      :commands
-      (markdown-toc-generate-toc
-      markdown-toc-generate-or-refresh-toc
-      markdown-toc-delete-toc
-      markdown-toc--toc-already-present-p)
-      :custom
-      (markdown-toc-header-toc-title "**Table of Contents**"))
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; Tree-sitter in Emacs is an incremental parsing system introduced in Emacs 29
-  ;; that provides precise, high-performance syntax highlighting. It supports a
-  ;; broad set of programming languages, including Bash, C, C++, C#, CMake, CSS,
-  ;; Dockerfile, Go, Java, JavaScript, JSON, Python, Rust, TOML, TypeScript, YAML,
-  ;; Elisp, Lua, Markdown, and many others.
-  (use-package treesit-auto
+;; The outline-indent Emacs package provides a minor mode that enables code
+;; folding based on indentation levels.
+;;
+;; In addition to code folding, *outline-indent* allows:
+;; - Moving indented blocks up and down
+;; - Indenting/unindenting to adjust indentation levels
+;; - Inserting a new line with the same indentation level as the current line
+;; - Move backward/forward to the indentation level of the current line
+;; - and other features.
+(use-package outline-indent
   :ensure t
+  :commands outline-indent-minor-mode
+
   :custom
-  (treesit-auto-install 'prompt)
-  :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode))
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-  (use-package buffer-terminator
-      :ensure t
-      :custom
-      ;; Enable/Disable verbose mode to log buffer cleanup events
-      (buffer-terminator-verbose nil)
-
-      ;; Set the inactivity timeout (in seconds) after which buffers are considered
-      ;; inactive (default is 30 minutes):
-      (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
-
-      ;; Define how frequently the cleanup process should run (default is every 10
-      ;; minutes):
-      (buffer-terminator-interval (* 10 60)) ; 10 minutes
-      :config
-      (buffer-terminator-mode 1))
-
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; A file and project explorer for Emacs that displays a structured tree
-;; layout, similar to file browsers in modern IDEs. It functions as a sidebar
-;; in the left window, providing a persistent view of files, projects, and
-;; other elsure t
-(use-package treemacs
-  :ensure t
-  :commands (treemacs
-             treemacs-select-window
-             treemacs-delete-other-windows
-             treemacs-select-directory
-             treemacs-bookmark
-             treemacs-find-file
-             treemacs-find-tag)
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t d"   . treemacs-select-directory)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag))
+  (outline-indent-ellipsis " ▼")
 
   :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  ;; The minor mode can also be automatically activated for a certain modes.
+  (add-hook 'python-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'python-ts-mode-hook #'outline-indent-minor-mode)
 
-  :config
-  (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-        treemacs-deferred-git-apply-delay        0.5
-        treemacs-directory-name-transformer      #'identity
-        treemacs-display-in-side-window          t
-        treemacs-eldoc-display                   'simple
-        treemacs-file-event-delay                2000
-        treemacs-file-extension-regex            treemacs-last-period-regex-value
-        treemacs-file-follow-delay               0.2
-        treemacs-file-name-transformer           #'identity
-        treemacs-follow-after-init               t
-        treemacs-expand-after-init               t
-        treemacs-find-workspace-method           'find-for-file-or-pick-first
-        treemacs-git-command-pipe                ""
-        treemacs-goto-tag-strategy               'refetch-index
-        treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-        treemacs-hide-dot-git-directory          t
-        treemacs-indentation                     2
-        treemacs-indentation-string              " "
-        treemacs-is-never-other-window           nil
-        treemacs-max-git-entries                 5000
-        treemacs-missing-project-action          'ask
-        treemacs-move-files-by-mouse-dragging    t
-        treemacs-move-forward-on-expand          nil
-        treemacs-no-png-images                   nil
-        treemacs-no-delete-other-windows         t
-        treemacs-project-follow-cleanup          nil
-        treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-        treemacs-position                        'left
-        treemacs-read-string-input               'from-child-frame
-        treemacs-recenter-distance               0.1
-        treemacs-recenter-after-file-follow      nil
-        treemacs-recenter-after-tag-follow       nil
-        treemacs-recenter-after-project-jump     'always
-        treemacs-recenter-after-project-expand   'on-distance
-        treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-        treemacs-project-follow-into-home        nil
-        treemacs-show-cursor                     nil
-        treemacs-show-hidden-files               t
-        treemacs-silent-filewatch                nil
-        treemacs-silent-refresh                  nil
-        treemacs-sorting                         'alphabetic-asc
-        treemacs-select-when-already-in-treemacs 'move-back
-        treemacs-space-between-root-nodes        t
-        treemacs-tag-follow-cleanup              t
-        treemacs-tag-follow-delay                1.5
-        treemacs-text-scale                      nil
-        treemacs-user-mode-line-format           nil
-        treemacs-user-header-line-format         nil
-        treemacs-wide-toggle-width               70
-        treemacs-width                           35
-        treemacs-width-increment                 1
-        treemacs-width-is-initially-locked       t
-        treemacs-workspace-switch-cleanup        nil)
-
-  ;; The default width and height of the icons is 22 pixels. If you are
-  ;; using a Hi-DPI display, uncomment this to double the icon size.
-  ;; (treemacs-resize-icons 44)
-
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode 'always)
-
-  ;;(when treemacs-python-executable
-  ;;  (treemacs-git-commit-diff-mode t))
-
-  (pcase (cons (not (null (executable-find "git")))
-               (not (null treemacs-python-executable)))
-    (`(t . t)
-     (treemacs-git-mode 'deferred))
-    (`(t . _)
-     (treemacs-git-mode 'simple)))
-
-  (treemacs-hide-gitignored-files-mode nil))
+  (add-hook 'yaml-mode-hook #'outline-indent-minor-mode)
+  (add-hook 'yaml-ts-mode-hook #'outline-indent-minor-mode))
 #+END_SRC
 
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#asynchronous-code-formatting-without-cursor-disruption][async code formatting]]
-
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-undoredo][Undo-fu: one button redo]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; Apheleia is an Emacs package designed to run code formatters (e.g., Shfmt,
-;; Black and Prettier) asynchronously without disrupting the cursor position.
-(use-package apheleia
+  ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
+  ;; system, providing more convenient undo/redo functionality.
+  (use-package undo-fu
   :ensure t
-  :commands (apheleia-mode
-             apheleia-global-mode)
-  :hook ((prog-mode . apheleia-mode)))
+  :commands (undo-fu-only-undo
+             undo-fu-only-redo
+             undo-fu-only-redo-all
+             undo-fu-disable-checkpoint)
+  :config (global-unset-key (kbd "C-z"))
+          (global-set-key (kbd "C-z") 'undo-fu-only-undo)
+          (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
+
+  ;; The undo-fu-session package complements undo-fu by enabling the saving
+  ;; and restoration of undo history across Emacs sessions, even after restarting.
+  (use-package undo-fu-session
+      :ensure t
+      :commands undo-fu-session-global-mode
+      :hook (after-init . undo-fu-session-global-mode))
 #+END_SRC
 
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#a-better-emacs-help-buffer][Helpful: better help buffer]]
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; Helpful is an alternative to the built-in Emacs help that provides much more
-;; contextual information.
-(use-package helpful
-  :ensure t
-  :commands (helpful-callable
-             helpful-variable
-             helpful-key
-             helpful-command
-             helpful-at-point
-             helpful-function)
-  :bind
-  ([remap describe-command] . helpful-command)
-  ([remap describe-function] . helpful-callable)
-  ([remap describe-key] . helpful-key)
-  ([remap describe-symbol] . helpful-symbol)
-  ([remap describe-variable] . helpful-variable)
-  :custom
-  (helpful-max-buffers 7))
-#+END_SRC
-
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-the-elisp-development-experience][Enhancing the Elisp development experience]]
+*** TODO Split: [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-the-elisp-development-experience][Enhancing the Elisp development experience]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Enables automatic indentation of code while typing
 (use-package aggressive-indent
   :ensure t
   :commands aggressive-indent-mode
   :hook
-  (emacs-lisp-mode . aggressive-indent-mode))
+  (emacs-lisp-mode . aggressive-indent-mode)
 
 ;; Highlights function and variable definitions in Emacs Lisp mode
 (use-package highlight-defined
   :ensure t
   :commands highlight-defined-mode
   :hook
-  (emacs-lisp-mode . highlight-defined-mode))
+  (emacs-lisp-mode . highlight-defined-mode)
 
 ;; Prevent parenthesis imbalance
 (use-package paredit
@@ -910,9 +814,56 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
              elisp-refs-special
              elisp-refs-symbol))
 #+END_SRC
+* Discoverability
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar]]
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+  ; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
+  (setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
+#+END_SRC
 
-* Web
-[[https://github.com/fxbois/web-mode/tree/master][web-mode]]
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#a-better-emacs-help-buffer][Helpful: better help buffer]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Helpful is an alternative to the built-in Emacs help that provides much more
+;; contextual information.
+(use-package helpful
+  :ensure t
+  :commands (helpful-callable
+             helpful-variable
+             helpful-key
+             helpful-command
+             helpful-at-point
+             helpful-function)
+  :bind
+  ([remap describe-command] . helpful-command)
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-key] . helpful-key)
+  ([remap describe-symbol] . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  :custom
+  (helpful-max-buffers 7))
+#+END_SRC
+
+** Display bound/free keys
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; which-key: shows a popup of available keybindings when typing a long key
+;; sequence (e.g. C-x ...)
+(leaf which-key
+  :ensure t
+  :config
+  (which-key-mode))
+
+;; Run M-x free-keys to display keys that are unbound
+(leaf free-keys :ensure t)
+#+END_SRC
+
+* Major modes
+** [[https://github.com/haskell/haskell-mode/tree/bd89438b0e6e6b6877d635699e265da85e85ca06][Haskell]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (use-package haskell-mode :ensure t )
+#+END_SRC
+
+** HTML/CSS
+*** [[https://github.com/fxbois/web-mode/tree/master][web-mode]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
       (use-package web-mode
       :ensure t
@@ -927,7 +878,8 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
       (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
       (defun my-web-mode-hook ()
-        "Hooks for Web mode."
+        "Hooks for Web
+mode."
         (setq web-mode-markup-indent-offset 2)
         (setq web-mode-css-indent-offset 2)
         (setq web-mode-code-indent-offset 4)
@@ -952,23 +904,80 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 
 #+END_SRC
 
-[[https://github.com/merrickluo/lsp-tailwindcss/tree/master][Tailwind-lsp]]
+*** [[https://github.com/merrickluo/lsp-tailwindcss/tree/master][Tailwind-lsp]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package lsp-tailwindcss :ensure t )
 #+END_SRC
 
 Since I use IHP / yesod / miso, haskell is part of my webdev workflow
-[[https://github.com/haskell/haskell-mode/tree/bd89438b0e6e6b6877d635699e265da85e85ca06][haskell-mode]]
+*** TODO [[https://github.com/P233/postcss-sorting.el/tree/deb0c935d2904c11a965758a9aee5a0e905f21fc][postcss-sorting]]
+Sorting CSS attributes as part of linting is nice
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-markdown-mode-eg-readmemd-syntax][Markdown]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  (use-package haskell-mode :ensure t )
+    ;; The markdown-mode package provides a major mode for Emacs for syntax
+    ;; highlighting, editing commands, and preview support for Markdown documents.
+    ;; It supports core Markdown syntax as well as extensions like GitHub Flavored
+    ;; Markdown (GFM).
+    (use-package markdown-mode
+        :commands (gfm-mode
+                   gfm-view-mode
+                   markdown-mode
+                   markdown-view-mode)
+        :mode (("\\.markdown\\'" . markdown-mode)
+              ("\\.md\\'" . markdown-mode)
+              ("README\\.md\\'" . gfm-mode))
+        :bind (:map markdown-mode-map
+              ("C-c C-e" . markdown-do)))
+
+  ;; Automatically generate a table of contents when editing Markdown files
+  (use-package markdown-toc
+      :ensure t
+      :commands
+      (markdown-toc-generate-toc
+      markdown-toc-generate-or-refresh-toc
+      markdown-toc-delete-toc
+      markdown-toc--toc-already-present-p)
+      :custom
+      (markdown-toc-header-toc-title "**Table of Contents**"))
 #+END_SRC
 
-Sorting CSS attributes as part of linting is nice
-[[https://github.com/P233/postcss-sorting.el/tree/deb0c935d2904c11a965758a9aee5a0e905f21fc][postcss-sorting]]
+** Org
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Base config]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  ;; Org mode is a major mode designed for organizing notes, planning, task
+  ;; management, and authoring documents using plain text with a simple and
+  ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
+  ;; scheduling, deadlines, time tracking, and exporting to multiple formats
+  ;; including HTML, LaTeX, PDF, and Markdown.
+  (use-package org
+      :ensure t
+      :commands (org-mode org-version)
+      :mode
+      ("\\.org\\'" . org-mode)
+      :custom
+       (org-hide-leading-stars t)
+       (org-startup-indented t)
+       (org-adapt-indentation nil)
+       (org-edit-src-content-indentation 0)
+       ;; (org-fontify-done-headline t)
+       ;; (org-fontify-todo-headline t)
+       ;; (org-fontify-whole-heading-line t)
+       ;; (org-fontify-quote-and-verse-blocks t)
+       (org-startup-truncated t))
+#+END_SRC
+*** Babel
+*** Export
+*** Agenda
+*** CRM
 
-* Data
+** CSV
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ; Edit csv
   (use-package csv-mode :ensure t)
 #+END_SRC
-Jinx
+
+* [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme: modus-operandi]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (mapc #'disable-theme custom-enabled-themes)  ; Disable all active themesOA
+  (load-theme 'modus-vivendi-deuteranopia t)  ; Load the built-in theme
+#+END_SRC
