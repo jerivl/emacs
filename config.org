@@ -343,7 +343,16 @@ If the new path's directories does not exist, create them."
 
 ** Generation
 * Buffers
-** TODO Dirvish / verticodirectory
+** Dirvish: modern file browser
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Dirvish: drop-in replacement for dired
+(use-package dirvish
+  :ensure t
+  :config
+  (dirvish-override-dired-mode))
+
+#+END_SRC
+
 ** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs: sidebar filetree]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; A file and project explorer for Emacs that displays a structured tree
@@ -853,13 +862,13 @@ If the new path's directories does not exist, create them."
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; which-key: shows a popup of available keybindings when typing a long key
 ;; sequence (e.g. C-x ...)
-(leaf which-key
+(use-package which-key
   :ensure t
   :config
   (which-key-mode))
 
 ;; Run M-x free-keys to display keys that are unbound
-(leaf free-keys :ensure t)
+(use-package free-keys :ensure t)
 #+END_SRC
 
 * Major modes
@@ -990,12 +999,11 @@ Sorting CSS attributes as part of linting is nice
 #+END_SRC
 ** Other themes that I like
 #+BEGIN_SRC emacs-lisp
-(leaf doric-themes
+(use-package doric-themes
   :ensure t
   :config
-  (doric-themes-select 'doric-wind)
-  )
-(leaf catppuccin-theme
+  (doric-themes-select 'doric-wind))
+(use-package catppuccin-theme
   :ensure t
   :config
   ;(load-theme 'catppuccin t)
@@ -1003,55 +1011,47 @@ Sorting CSS attributes as part of linting is nice
   ;(setq catppuccin-flavor 'latte)
   ;(setq catppuccin-flavor 'mocha)
   ;(setq catppuccin-flavor 'macchiato)
-  ;(catppuccin-reload)
-  )
+  ;(catppuccin-reload))
 
-(leaf all-the-icons :ensure t)
-(leaf kaolin-themes
+(use-package all-the-icons :ensure t)
+(use-package kaolin-themes
   :ensure t
   :after all-the-icons
   :config
   ;(kaolin-treemacs-theme)
   ;(load-theme 'kaolin-dark t)
   ;(load-theme 'kaolin-light t)
-                                        ;(load-theme 'kaolin-aurora t)
+  ;(load-theme 'kaolin-aurora t)
   ;(load-theme 'kaolin-bubblegum t)
   ;(load-theme 'kaolin-eclipse t)
   ;(load-theme 'kaolin-galaxy t)
   ;(load-theme 'kaolin-ocean t)
   ;(load-theme 'kaolin-temple t)
   ;(load-theme 'kaolin-valley-dark t)
-  ;(load-theme 'kaolin-valley-light t)
-  )
+  ;(load-theme 'kaolin-valley-light t))
 
-(leaf jazz-theme
+(use-package jazz-theme
   :ensure t
   :config
-  ;(load-theme 'jazz t)
-  )
-(leaf exotica-theme
+  ;(load-theme 'jazz t))
+(use-package exotica-theme
   :ensure t
   :config
-  ;(load-theme 'exotica t)
-  )
-(leaf pink-bliss-uwu-theme
+  ;(load-theme 'exotica t))
+(use-package pink-bliss-uwu-theme
   :ensure t
   :config
-  ;(load-theme 'pink-bliss-uwu t)
-  )
-(leaf rebecca-theme
+  ;(load-theme 'pink-bliss-uwu t))
+(use-package rebecca-theme
   :ensure t
   :config
-  ;(load-theme 'rebecca t)
-  )
-(leaf django-theme
+  ;(load-theme 'rebecca t))
+(use-package django-theme
   :ensure t
   :config
-  ;(load-theme 'django t)
-  )
-(leaf white-sand-theme
+  ;(load-theme 'django t))
+(use-package white-sand-theme
   :ensure t
   :config
-  ;(load-theme 'white-sand t)
-  )
+  ;(load-theme 'white-sand t))
 #+END_SRC
