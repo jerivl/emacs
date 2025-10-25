@@ -822,10 +822,19 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
      (treemacs-git-mode 'simple)))
 
   (treemacs-hide-gitignored-files-mode nil))
-
-
 #+END_SRC
 
+[[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#asynchronous-code-formatting-without-cursor-disruption][async code formatting]]
+
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Apheleia is an Emacs package designed to run code formatters (e.g., Shfmt,
+;; Black and Prettier) asynchronously without disrupting the cursor position.
+(use-package apheleia
+  :ensure t
+  :commands (apheleia-mode
+             apheleia-global-mode)
+  :hook ((prog-mode . apheleia-mode)))
+#+END_SRC
 * Web
 [[https://github.com/fxbois/web-mode/tree/master][web-mode]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
