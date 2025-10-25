@@ -727,6 +727,8 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 ;; layout, similar to file browsers in modern IDEs. It functions as a sidebar
 ;; in the left window, providing a persistent view of files, projects, and
 ;; other elsure t
+(use-package treemacs
+  :ensure t
   :commands (treemacs
              treemacs-select-window
              treemacs-delete-other-windows
@@ -857,6 +859,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
   :custom
   (helpful-max-buffers 7))
 #+END_SRC
+
 * Web
 [[https://github.com/fxbois/web-mode/tree/master][web-mode]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -900,7 +903,7 @@ minimal-emacs.d suggested to use the Corfu, Cape, Vertico, Consult, and Embark s
 
 [[https://github.com/merrickluo/lsp-tailwindcss/tree/master][Tailwind-lsp]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package ensure: '(lsp-tailwindcss :host github :repo "merrickluo/lsp-tailwindcss"))
+(use-package :ensure '(lsp-tailwindcss :host github :repo "merrickluo/lsp-tailwindcss"))
 #+END_SRC
 
 Since I use IHP / yesod / miso, haskell is part of my webdev workflow
@@ -914,6 +917,8 @@ Sorting CSS attributes as part of linting is nice
 
 * Data
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-# Edit
+# Edit csv
 (use-package csv-mode :ensure t)
 #+END_SRC
+
+Jinx
