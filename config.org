@@ -312,11 +312,6 @@ If the new path's directories does not exist, create them."
 *** TODO Split and change to corfu [[https://github.com/manateelazycat/lsp-bridge?tab=readme-ov-file][lsp-bridge + yasnippet]]
 
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; The official collection of snippets for yasnippet.
-(use-package yasnippet-snippets
-  :ensure t
-  :after yasnippet)
-
 ;; YASnippet is a template system designed that enhances text editing by
 ;; enabling users to define and use snippets. When a user types a short
 ;; abbreviation, YASnippet automatically expands it into a full template, which
@@ -341,6 +336,7 @@ If the new path's directories does not exist, create them."
   :init
   ;; Suppress verbose messages
   (setq yas-verbosity 0))
+(use-package auto-yasnippet :ensure t)
 
        (use-package lsp-bridge
          :ensure (lsp-bridge
