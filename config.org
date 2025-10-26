@@ -1009,11 +1009,15 @@ Sorting CSS attributes as part of linting is nice
        ;; (org-fontify-quote-and-verse-blocks t)
        (org-startup-truncated t))
 #+END_SRC
+*** Transclusion
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+; Allow transclusion
+(use-package org-transclusion :ensure t)
+#+END_SRC
 *** Babel
 *** Export
 *** Agenda
 *** CRM
-
 ** CSV
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ; Edit csv
