@@ -35,6 +35,13 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 (when (< emacs-major-version 29)
   (error "Only verified to run on Emacs 29 and newer; you have version %s" emacs-major-version))
 #+END_SRC
+** Basic config
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+;;; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
+;; NOTE: This must be placed in 'pre-early-init.el'.
+(setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
+#+END_SRC
 * Runtime-Internals
 ** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Assist native compilation with compile-angel]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -335,7 +342,8 @@ If the new path's directories does not exist, create them."
 
   :init
   ;; Suppress verbose messages
-  (setq yas-verbosity 0))
+  (setq yas-verbosity 0)
+  (yas-minor-mode-on))
 (use-package auto-yasnippet :ensure t)
 
        (use-package lsp-bridge
@@ -352,7 +360,7 @@ If the new path's directories does not exist, create them."
             (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
 #+END_SRC
 
-** Generation
+** Generative AI
 * Buffers
 ** Dirvish: modern file browser
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
