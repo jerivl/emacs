@@ -235,6 +235,21 @@ If the new path's directories does not exist, create them."
 
 #+END_SRC
 
+** Clipboard management
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Sends all new entries to the kill ring to the system clipboard
+(use-package clipetty
+  :ensure t
+  :hook (after-init . global-clipetty-mode))
+
+;; * Editing niceities
+;; Allow emacs to use pbcopy for the system clipboard
+(use-package pbcopy
+  :ensure t
+  :config
+  (turn-on-pbcopy))
+
+#+END_SRC
 * Code augmentation
 ** Linting
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
@@ -729,6 +744,15 @@ If the new path's directories does not exist, create them."
         (meow-global-mode 1))
 #+END_SRC
 
+*** Enable mouse
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Enable horizontal scrolling
+(setopt mouse-wheel-tilt-scroll t)
+(setopt mouse-wheel-flip-direction t)
+
+;; For terminal users, make the mouse more useful
+(xterm-mouse-mode 1)
+#+END_SRC
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#code-folding][Outline-Indent based code folding]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; The outline-indent Emacs package provides a minor mode that enables code
@@ -830,10 +854,15 @@ If the new path's directories does not exist, create them."
              elisp-refs-symbol))
 #+END_SRC
 * Discoverability
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar]]
+** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar and disable tab bar]]
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-  ; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
-  (setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
+; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
+(setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Hide tab bar
+(setopt tab-bar-show nil)
 #+END_SRC
 
 ** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#a-better-emacs-help-buffer][Helpful: better help buffer]]
