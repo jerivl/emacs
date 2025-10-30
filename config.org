@@ -1,10 +1,12 @@
-#+title: jeri's emacs config as a literate program
+#+TITLE: Emacs config
+#+AUTO_TANGLE: t
+
+#+transclude: [[file:README.md][README.md]]
 
 
-* TODO Introduction Transclude README.md
 minimal-emacs.d suggested configurations are used heavily. Source is linked if available.
 ** Boilerplate to ensure .el files have proper headers.
-#+name: elisp-header
+#+NAME: elisp-header
 #+BEGIN_SRC emacs-lisp
 ;;; -*- lexical-binding: t -*-
 
@@ -29,12 +31,7 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 <<elisp-header>>
 (message "ok")
 #+END_SRC
-** Guardrail
-#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-;;; Guardrail
-(when (< emacs-major-version 29)
-  (error "Only verified to run on Emacs 29 and newer; you have version %s" emacs-major-version))
-#+END_SRC
+
 ** Basic config
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
 ;;; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
@@ -92,53 +89,53 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 
 #+END_SRC
 #+BEGIN_SRC emacs-lisp :tangle pre-init.el
-  ;; Elpaca bootstrap
-  (defvar elpaca-installer-version 0.11)
-  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref nil :depth 1 :inherit ignore
-                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-         (build (expand-file-name "elpaca/" elpaca-builds-directory))
-         (order (cdr elpaca-order))
-         (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (<= emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                    ,@(when-let* ((depth (plist-get order :depth)))
-                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                    ,(plist-get order :repo) ,repo))))
-                    ((zerop (call-process "git" nil buffer t "checkout"
-                                          (or (plist-get order :ref) "--"))))
-                    (emacs (concat invocation-directory invocation-name))
-                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                    ((require 'elpaca))
-                    ((elpaca-generate-autoloads "elpaca" repo)))
-              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-            (error "%s" (with-current-buffer buffer (buffer-string))))
-        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
+   ;; Elpaca bootstrap
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-  ;; Optional: Install use-package support
-  ;; If you enable elpaca-use-package, some use-package definitions, such as
-  ;; Vertico's, may need modifications. See the following discussion for details:
-  ;; https://github.com/jamescherti/minimal-emacs.d/issues/54
-  ;;
-  (elpaca elpaca-use-package
-  (elpaca-use-package-mode))
+;; Optional: Install use-package support
+;; If you enable elpaca-use-package, some use-package definitions, such as
+;; Vertico's, may need modifications. See the following discussion for details:
+;; https://github.com/jamescherti/minimal-emacs.d/issues/54
+;;
+(elpaca elpaca-use-package
+(elpaca-use-package-mode))
 
 #+END_SRC
 
@@ -204,7 +201,7 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
      search-ring regexp-search-ring)))
 
 ;; save-place-mode enables Emacs to remember the last location within a file
-;; upon reopening. This feature is particularly beneficial for resuming work at
+;; upon reopenng. This feature is particularly beneficial for resuming work at
 ;; the precise point where you previously left off.
 (use-package saveplace
   :ensure nil
@@ -259,7 +256,7 @@ If the new path's directories does not exist, create them."
 #+END_SRC
 * Code augmentation
 ** Linting
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
+*** [[https://github.com/jAMESCHERTI/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; The stripspace Emacs package provides stripspace-local-mode, a minor mode
 ;; that automatically removes trailing whitespace and blank lines at the end of
@@ -651,93 +648,121 @@ If the new path's directories does not exist, create them."
 ** Editing/Navigation
 *** [[https://github.com/meow-edit/meow][Meow: modal editing]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  (use-package meow
-        :ensure t
-        :config
-            (defun meow-setup ()
-              (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-              (meow-motion-define-key
-               '("j" . meow-next)
-               '("k" . meow-prev)
-               '("<escape>" . ignore))
-              (meow-leader-define-key
-               ;; Use SPC (0-9) for digit arguments.
-               '("1" . meow-digit-argument)
-               '("2" . meow-digit-argument)
-               '("3" . meow-digit-argument)
-               '("4" . meow-digit-argument)
-               '("5" . meow-digit-argument)
-               '("6" . meow-digit-argument)
-               '("7" . meow-digit-argument)
-               '("8" . meow-digit-argument)
-               '("9" . meow-digit-argument)
-               '("0" . meow-digit-argument)
-               '("/" . meow-keypad-describe-key)
-               '("?" . meow-cheatsheet))
-              (meow-normal-define-key
-               '("0" . meow-expand-0)
-               '("9" . meow-expand-9)
-               '("8" . meow-expand-8)
-               '("7" . meow-expand-7)
-               '("6" . meow-expand-6)
-               '("5" . meow-expand-5)
-               '("4" . meow-expand-4)
-               '("3" . meow-expand-3)
-               '("2" . meow-expand-2)
-               '("1" . meow-expand-1)
-               '("-" . negative-argument)
-               '(";" . meow-reverse)
-               '("," . meow-inner-of-thing)
-               '("." . meow-bounds-of-thing)
-               '("[" . meow-beginning-of-thing)
-               '("]" . meow-end-of-thing)
-               '("a" . meow-append)
-               '("A" . meow-open-below)
-               '("b" . meow-back-word)
-               '("B" . meow-back-symbol)
-               '("c" . meow-change)
-               '("d" . meow-delete)
-               '("D" . meow-backward-delete)
-               '("e" . meow-next-word)
-               '("E" . meow-next-symbol)
-               '("f" . meow-find)
-               '("g" . meow-cancel-selection)
-               '("G" . meow-grab)
-               '("h" . meow-left)
-               '("H" . meow-left-expand)
-               '("i" . meow-insert)
-               '("I" . meow-open-above)
-               '("j" . meow-next)
-               '("J" . meow-next-expand)
-               '("k" . meow-prev)
-               '("K" . meow-prev-expand)
-               '("l" . meow-right)
-               '("L" . meow-right-expand)
-               '("m" . meow-join)
-               '("n" . meow-search)
-               '("o" . meow-block)
-               '("O" . meow-to-block)
-               '("p" . meow-yank)
-               '("q" . meow-quit)
-               '("Q" . meow-goto-line)
-               '("r" . meow-replace)
-               '("R" . meow-swap-grab)
-               '("s" . meow-kill)
-               '("t" . meow-till)
-               '("u" . meow-undo)
-               '("U" . meow-undo-in-selection)
-               '("v" . meow-visit)
-               '("w" . meow-mark-word)
-               '("W" . meow-mark-symbol)
-               '("x" . meow-line)
-               '("X" . meow-goto-line)
-               '("y" . meow-save)
-               '("Y" . meow-sync-grab)
-               '("z" . meow-pop-selection)
-               '("'" . repeat)
-               '("<escape>" . ignore)))
-        (meow-setup)
-        (meow-global-mode 1))
+(use-package meow
+      :ensure t
+      :config
+          (defun meow-setup ()
+            (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+            (meow-motion-define-key
+             '("j" . meow-next)
+             '("k" . meow-prev)
+             '("<escape>" . ignore))
+            (meow-leader-define-key
+             ;; Use SPC (0-9) for digit arguments.
+             '("1" . meow-digit-argument)
+             '("2" . meow-digit-argument)
+             '("3" . meow-digit-argument)
+             '("4" . meow-digit-argument)
+             '("5" . meow-digit-argument)
+             '("6" . meow-digit-argument)
+             '("7" . meow-digit-argument)
+             '("8" . meow-digit-argument)
+             '("9" . meow-digit-argument)
+             '("0" . meow-digit-argument)
+             '("/" . meow-keypad-describe-key)
+             '("?" . meow-cheatsheet))
+            (meow-normal-define-key
+             '("0" . meow-expand-0)
+             '("9" . meow-expand-9)
+             '("8" . meow-expand-8)
+             '("7" . meow-expand-7)
+             '("6" . meow-expand-6)
+             '("5" . meow-expand-5)
+             '("4" . meow-expand-4)
+             '("3" . meow-expand-3)
+             '("2" . meow-expand-2)
+             '("1" . meow-expand-1)
+             '("-" . negative-argument)
+             ;'(";" . meow-reverse)
+             '("," . meow-inner-of-thing)
+             '("." . meow-bounds-of-thing)
+             '("[" . meow-beginning-of-thing)
+             '("]" . meow-end-of-thing)
+             '("a" . meow-append)
+             ;'("A" . meow-open-below)
+             '("b" . meow-back-word)
+             '("B" . meow-back-symbol)
+             '("c" . meow-change)
+             '("d" . meow-delete)
+             '("D" . meow-backward-delete)
+             '("e" . meow-next-word)
+             '("E" . meow-next-symbol)
+             '("f" . meow-find)
+             '(";" . meow-cancel-selection)
+             ;'("G" . meow-grab)
+             '("h" . meow-left)
+             '("H" . meow-left-expand)
+             '("i" . meow-insert)
+             ;'("I" . meow-open-above)
+             '("j" . meow-next)
+             '("J" . meow-next-expand)
+             '("k" . meow-prev)
+             '("K" . meow-prev-expand)
+             '("l" . meow-right)
+             '("L" . meow-right-expand)
+             '("m" . meow-join)
+             '("n" . meow-search)
+             '("p" . meow-yank)
+             '("q" . meow-quit)
+             ;'("o" . meow-block)
+             ;'("O" . meow-to-block)
+             '("Q" . meow-goto-line)
+             '("r" . meow-replace)
+             '("R" . meow-swap-grab)
+             ;'("s" . meow-kill)
+             '("t" . meow-till)
+             ;'("u" . meow-undo)
+             ;'("U" . meow-undo-in-selection)
+             ;'("v" . meow-visit)
+             '("w" . meow-mark-word)
+             '("W" . meow-mark-symbol)
+             '("x" . meow-line)
+             '("X" . meow-goto-line)
+             '("y" . meow-save)
+             '("Y" . meow-sync-grab)
+             '("z" . meow-pop-selection)
+             '("<escape>" . ignore)
+             '("'" . repeat)
+             ;; Custom bindings
+             '("u" . undo-fu-only-undo)
+             '("U" . undo-fu-only-redo)
+             '("s" . meow-visit)
+             '("M-;" . meow-reverse)
+             '("g" . meow-grab)
+             '("o" . meow-open-below)
+             '("O" . meow-open-above)
+             '("I" . meow-block)
+             '("A" . meow-to-block)
+             '("/" . consult-line)
+             '("?" . consult-ripgrep)))
+
+            ;; Remap beacon mode bindings
+            (add-hook 'meow-beacon-mode-hook #'(lambda ()
+              (if meow-beacon-mode
+              (progn
+                (meow-normal-define-key
+                  '("I" . meow-beacon-insert)
+                  '("A" . meow-beacon-append)
+                  '("R" . meow-beacon-replace)
+                  '("C" . meow-beacon-change)))
+              (progn
+                (meow-normal-define-key
+                  '("I" . meow-block)
+                  '("A" . meow-to-block)
+                  '("R" . meow-replace)
+                  '("C" . meow-change))))))
+            (meow-setup)
+            (meow-global-mode 1))
 #+END_SRC
 
 *** Enable mouse
@@ -778,24 +803,25 @@ If the new path's directories does not exist, create them."
 
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-undoredo][Undo-fu: one button redo]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
-  ;; system, providing more convenient undo/redo functionality.
-  (use-package undo-fu
-  :ensure t
-  :commands (undo-fu-only-undo
-             undo-fu-only-redo
-             undo-fu-only-redo-all
-             undo-fu-disable-checkpoint)
-  :config (global-unset-key (kbd "C-z"))
-          (global-set-key (kbd "C-z") 'undo-fu-only-undo)
-          (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
+;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
+;; system, providing more convenient undo/redo functionality.
+(use-package undo-fu
+:ensure t
+:commands (undo-fu-only-undo
+           undo-fu-only-redo
+           undo-fu-only-redo-all
+           undo-fu-disable-checkpoint)
+:config (global-unset-key (kbd "C-z"))
+        (global-unset-key (kbd "C-Z"))
+        (global-set-key (kbd "C-z") 'undo-fu-only-undo)
+        (global-set-key (kbd "C-Z") 'undo-fu-only-redo))
 
-  ;; The undo-fu-session package complements undo-fu by enabling the saving
-  ;; and restoration of undo history across Emacs sessions, even after restarting.
-  (use-package undo-fu-session
-      :ensure t
-      :commands undo-fu-session-global-mode
-      :hook (after-init . undo-fu-session-global-mode))
+;; The undo-fu-session package complements undo-fu by enabling the saving
+;; and restoration of undo history across Emacs sessions, even after restarting.
+(use-package undo-fu-session
+    :ensure t
+    :commands undo-fu-session-global-mode
+    :hook (after-init . undo-fu-session-global-mode))
 #+END_SRC
 
 *** TODO Split: [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-the-elisp-development-experience][Enhancing the Elisp development experience]]
@@ -1092,15 +1118,20 @@ Config suggested by minimal-emacs
       :mode
       ("\\.org\\'" . org-mode)
       :custom
-       (org-hide-leading-stars t)
-       (org-startup-indented t)
-       (org-adapt-indentation nil)
-       (org-edit-src-content-indentation 0)
-       ;; (org-fontify-done-headline t)
-       ;; (org-fontify-todo-headline t)
-       ;; (org-fontify-whole-heading-line t)
-       ;; (org-fontify-quote-and-verse-blocks t)
-       (org-startup-truncated t))
+      (org-hide-leading-stars t)
+      (org-startup-indented t)
+      (org-adapt-indentation nil)
+      (org-edit-src-content-indentation 0)
+      ;; (org-fontify-done-headline t)
+      ;; (org-fontify-todo-headline t)
+      ;; (org-fontify-whole-heading-line t)
+      ;; (org-fontify-quote-and-verse-blocks t)
+      (org-startup-truncated t)
+      :bind
+      (:map org-mode-map
+            ("C-M-;" . org-comment-dwim)   ;; pick some comfortable binding
+       ))
+
 #+END_SRC
 
 ** Transclusion
@@ -1110,6 +1141,18 @@ Config suggested by minimal-emacs
 #+END_SRC
 ** Babel
 *** Auto-tangle
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Automatically tangle org-babel source blocks on save
+;; test
+;; test2
+;;test3
+;;
+(use-package org-auto-tangle
+  :ensure t
+  :init
+  ;; The minor mode can also be automatically activated for a certain modes.
+  (add-hook 'org-mode-hook #'org-auto-tangle-mode))
+#+END_SRC
 ** Export
 ** Agenda
 ** Journal
