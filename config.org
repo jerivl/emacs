@@ -325,39 +325,31 @@ If the new path's directories does not exist, create them."
 ;; can include placeholders, fields, and dynamic content.
 (use-package yasnippet
   :ensure t
-  :commands (yas-minor-mode
-             yas-global-mode)
-
-  :hook
-  (after-init . yas-global-mode)
-
-  :custom
-  (yas-also-auto-indent-first-line t)  ; Indent first line of snippet
-  (yas-also-indent-empty-lines t)
-  (yas-snippet-revival nil)  ; Setting this to t causes issues with undo
-  (yas-wrap-around-region nil) ; Do not wrap region when expanding snippets
-  ;; (yas-triggers-in-field nil)  ; Disable nested snippet expansion
-  (yas-indent-line 'fixed) ; Do not auto-indent snippet content
-  ;; (yas-prompt-functions '(yas-no-prompt))  ; No prompt for snippet choices
-
-  :init
+  :config
+  ;; Enable yasnippet globally
+  (yas-global-mode 1)
   ;; Suppress verbose messages
-  (setq yas-verbosity 0)
-  (yas-minor-mode-on))
+ (setq yas-verbosity 0))
+
 (use-package auto-yasnippet :ensure t)
 
-       (use-package lsp-bridge
-         :ensure (lsp-bridge
-                      :host github
-                      :repo "manateelazycat/lsp-bridge"
-                      :files ("*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources"))
-                      :init
-                      (global-lsp-bridge-mode))
-        (unless (display-graphic-p)
-          (use-package popon :ensure
-            (popon :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
-          (use-package acm-terminal :ensure
-            (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
+;; Make sure to have the following packages installed to your python env:
+;; epc orjson sexpdata six setuptools paramiko rapidfuzz watchdog packaging
+(use-package lsp-bridge
+  :ensure (lsp-bridge
+    :host github
+    :repo "manateelazycat/lsp-bridge"
+    :files ("*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources"))
+    :init
+    (global-lsp-bridge-mode))
+
+;; Make sure that lsp-bridge still works in tty on all platforms
+(unless (display-graphic-p)
+  (use-package popon :ensure
+    (popon :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
+  (use-package acm-terminal :ensure
+    (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
+
 #+END_SRC
 
 ** Generative AI
