@@ -1133,6 +1133,12 @@ Config suggested by minimal-emacs
        ))
 
 #+END_SRC
+Trying org-modern
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package org-modern
+  :ensure t
+  :config (add-hook 'org-mode-hook #'org-modern-mode))
+#+END_SRC
 
 ** Transclusion
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -1143,10 +1149,6 @@ Config suggested by minimal-emacs
 *** Auto-tangle
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Automatically tangle org-babel source blocks on save
-;; test
-;; test2
-;;test3
-;;
 (use-package org-auto-tangle
   :ensure t
   :init
@@ -1156,9 +1158,7 @@ Config suggested by minimal-emacs
 ** Export
 ** Agenda
 ** Journal
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
 
-#+END_SRC
 * Hyperbole
 Clickable hypermedia links + hyrolo CRM
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
