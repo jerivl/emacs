@@ -15,6 +15,10 @@ autosave
 tramp
 .\#*
 
+### devenv ###
+/.devenv.flake.nix
+/devenv.lock
+
 # Org-mode
 .org-id-locations
 *_archive
@@ -62,3 +66,14 @@ flycheck_*.el
 
 # End of https://www.toptal.com/developers/gitignore/api/emacs
 
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
