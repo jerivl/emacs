@@ -770,9 +770,6 @@ If the new path's directories does not exist, create them."
                   '("A" . meow-to-block)
                   '("R" . meow-replace)
                   '("C" . meow-change))))))
-
-
-
             (meow-setup)
             (meow-global-mode 1))
 #+END_SRC
@@ -1153,7 +1150,9 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package org-modern
   :ensure t
-  :config (add-hook 'org-mode-hook #'org-modern-mode))
+  :config
+ (setq org-modern-table nil)
+ (add-hook 'org-mode-hook #'org-modern-mode))
 #+END_SRC
 
 ** Transclusion
