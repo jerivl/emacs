@@ -651,6 +651,14 @@ If the new path's directories does not exist, create them."
 (use-package meow
       :ensure t
       :config
+            ;; Remap delete binding based on active region
+           (defun my-delete-cmd ()
+               (interactive)
+               ; "Kill region if it's active and nonempty. Else delete."
+               (if (use-region-p)
+                   (meow-kill))
+                 (meow-delete))
+
           (defun meow-setup ()
             (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
             (meow-motion-define-key
@@ -693,7 +701,7 @@ If the new path's directories does not exist, create them."
              '("b" . meow-back-word)
              '("B" . meow-back-symbol)
              '("c" . meow-change)
-             '("d" . meow-delete)
+             ;'("d" . meow-delete)
              '("D" . meow-backward-delete)
              '("e" . meow-next-word)
              '("E" . meow-next-symbol)
@@ -737,6 +745,7 @@ If the new path's directories does not exist, create them."
              '("u" . undo-fu-only-undo)
              '("U" . undo-fu-only-redo)
              '("s" . meow-visit)
+             '("d" . my-delete-cmd)
              '("M-;" . meow-reverse)
              '("g" . meow-grab)
              '("o" . meow-open-below)
@@ -761,6 +770,9 @@ If the new path's directories does not exist, create them."
                   '("A" . meow-to-block)
                   '("R" . meow-replace)
                   '("C" . meow-change))))))
+
+
+
             (meow-setup)
             (meow-global-mode 1))
 #+END_SRC
@@ -923,6 +935,7 @@ If the new path's directories does not exist, create them."
 #+END_SRC
 
 * Major modes
+** Python
 ** [[https://github.com/haskell/haskell-mode/tree/bd89438b0e6e6b6877d635699e265da85e85ca06][Haskell]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (use-package haskell-mode :ensure t )
@@ -1008,6 +1021,9 @@ Sorting CSS attributes as part of linting is nice
 #+END_SRC
 
 ** Hledger
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package hledger-mode :ensure t)
+#+END_SRC
 ** CSV
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ; Edit csv
@@ -1133,7 +1149,7 @@ Config suggested by minimal-emacs
        ))
 
 #+END_SRC
-Trying org-modern
+Trying org-modern again. The last time I tried it wasn't consistent about indentation
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package org-modern
   :ensure t
