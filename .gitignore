@@ -17,7 +17,7 @@ tramp
 
 ### devenv ###
 /.devenv.flake.nix
-devenv.lock
+*.lock*
 
 # Org-mode
 .org-id-locations
