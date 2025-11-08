@@ -1173,11 +1173,5 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 ** Export
 ** Agenda
 ** Journal
-
-* Hyperbole
-Clickable hypermedia links + hyrolo CRM
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package hyperbole :ensure t)
-#+END_SRC
 * Calendar
 * Homw
