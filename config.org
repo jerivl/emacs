@@ -298,6 +298,40 @@ If the new path's directories does not exist, create them."
 #+END_SRC
 
 ** Completion
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-lsp-servers-with-eglot-built-in][eglot]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Set up the Language Server Protocol (LSP) servers using Eglot.
+(use-package eglot
+  :ensure nil
+  :commands (eglot-ensure
+             eglot-rename
+             eglot-format-buffer))
+#+END_SRC
+**** pylsp setup
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Configure Eglot to enable or disable certain options for the pylsp server
+;; in Python development. (Note that a third-party tool,
+;; https://github.com/python-lsp/python-lsp-server, must be installed),
+(add-hook 'python-mode-hook #'eglot-ensure)
+(add-hook 'python-ts-mode-hook #'eglot-ensure)
+(setq-default eglot-workspace-configuration
+              `(:pylsp (:plugins
+                        (;; Fix imports and syntax using `eglot-format-buffer`
+                         :isort (:enabled t)
+                         :autopep8 (:enabled t)
+
+                         ;; Syntax checkers (works with Flymake)
+                         :pylint (:enabled t)
+                         :pycodestyle (:enabled t)
+                         :flake8 (:enabled t)
+                         :pyflakes (:enabled t)
+                         :pydocstyle (:enabled t)
+                         :mccabe (:enabled t)
+
+                         :yapf (:enabled :json-false)
+                         :rope_autoimport (:enabled :json-false)))))
+#+END_SRC
+
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ;; Tree-sitter in Emacs is an incremental parsing system introduced in Emacs 29
@@ -329,23 +363,6 @@ If the new path's directories does not exist, create them."
  (setq yas-verbosity 0))
 
 (use-package auto-yasnippet :ensure t)
-
-;; Make sure to have the following packages installed to your python env:
-;; epc orjson sexpdata six setuptools paramiko rapidfuzz watchdog packaging
-;(use-package lsp-bridge
-;  :ensure (lsp-bridge
-;    :host github
-;    :repo "manateelazycat/lsp-bridge"
-;    :files ("*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources"))
-;    :init
-;    (global-lsp-bridge-mode))
-
-;; Make sure that lsp-bridge still works in tty on all platforms
-;(unless (display-graphic-p)
-;  (use-package popon :ensure
-;    (popon :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
-;  (use-package acm-terminal :ensure
-;    (acm-terminal :host github :repo "twlz0ne/acm-terminal")))
 
 #+END_SRC
 
@@ -1212,3 +1229,10 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 ** Journal
 * Calendar
 * Homw
+* Email
+** Himalaya
+I use himalaya primarily because it allows me to reference any email with a one line cmd
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Primary email application
+(use-package himalaya :ensure t)
+#+END_SRC
