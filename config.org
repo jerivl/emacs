@@ -1101,19 +1101,29 @@ Sorting CSS attributes as part of linting is nice
 ;  :ensure t
 ;  :after nix-mode
 ;  :commands (nix-repl))
-(use-package nixos-options
-  :ensure t )
+(use-package nixos-options :ensure t )
+(use-package nix-ts-mode :ensure t)
 #+END_SRC
 ** Text
 *** TODO Spellcheck and thesaurus
 * [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme: modus-operandi]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-(mapc #'disable-theme custom-enabled-themes)  ; Disable all active themesOA
-(load-theme 'modus-vivendi-deuteranopia t)  ; Load the built-in theme
+(use-package lambda-themes
+  :ensure (:host github :repo "lambda-emacs/lambda-themes")
+  :custom
+  (lambda-themes-set-italic-comments t)
+  (lambda-themes-set-italic-keywords t)
+  (lambda-themes-set-variable-pitch t)
+  :config
+  ;; load preferred theme
+  (load-theme 'lambda-dark))
 
 #+END_SRC
 ** Other themes that I like
 #+BEGIN_SRC emacs-lisp
+(mapc #'disable-theme custom-enabled-themes)  ; Disable all active themesOA
+(load-theme 'modus-vivendi-deuteranopia t)  ; Load the built-in theme
+
 (use-package doric-themes
   :ensure t
   :config
@@ -1229,9 +1239,28 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 ** Journal
 * Calendar
 * Homw
+I'm primarily using org mode for all of my notes. The only exception is the foss software db that I generate into markdown. (Maybe I'll publish it eventually)
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package howm
+  :ensure t
+  :init
+  ;; Format
+  ;(require 'howm-markdown) ;; Write notes in markdown-mode. (*1)
+  (require 'howm-org) ;; Write notes in Org-mode. (*2)
+  ;;
+  ;; Preferences
+  (setq howm-directory "/Users/jer/Library/CloudStorage/ProtonDrive-jerivl@pm.me-folder/org/howm") ;; Where to store the files?
+  (setq howm-follow-theme t) ;; Use your Emacs theme colors. (*3)
+  ;;
+  ;; Performance
+  (setq howm-menu-expiry-hours 1) ;; Cache menu N hours. (*4)
+  (setq howm-menu-refresh-after-save nil) ;; Speed up note saving. (*5)
+  )
+#+END_SRC
 * Email
 ** Himalaya
 I use himalaya primarily because it allows me to reference any email with a one line cmd
+asdf
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Primary email application
 (use-package himalaya :ensure t)
