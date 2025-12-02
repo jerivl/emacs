@@ -1129,6 +1129,20 @@ Sorting CSS attributes as part of linting is nice
 (use-package nix-ts-mode :ensure t)
 #+END_SRC
 ** Text
+*** Write-good-mode
+Modern implementation of [[https://matt.might.net/articles/shell-scripts-for-passive-voice-weasel-words-duplicates/][weasle word finder]]
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package writegood-mode :ensure t)
+#+END_SRC
+*** Dictionary
+TODO Currently waiting on a solution to https://github.com/jamescherti/quick-sdcv.el/issues/3
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package quick-sdcv
+  :ensure t
+  :custom
+  (quick-sdcv-dictionary-prefix-symbol "►")
+  (quick-sdcv-ellipsis " ▼"))
+#+END_SRC
 *** Thesaurus
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package synosaurus
@@ -1281,6 +1295,11 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 ** Export
 ** Agenda
 ** Journal
+** Citations
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package papis
+  :ensure (:host github :repo "papis/papis.el"))
+#+END_SRC
 * Calendar
 
 * Homw
@@ -1305,8 +1324,7 @@ I'm primarily using org mode for all of my notes. The only exception is the foss
 * Email
 ** Himalaya
 I use himalaya primarily because it allows me to reference any email with a one line cmd
-asdf
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
++BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Primary email application
 (use-package himalaya :ensure t)
 #+END_SRC
