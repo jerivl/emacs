@@ -5,7 +5,8 @@
 
 
 minimal-emacs.d suggested configurations are used heavily. Source is linked if available.
-** Boilerplate to ensure .el files have proper headers.
+* Base config
+** Boilerplate.
 #+NAME: elisp-header
 #+BEGIN_SRC emacs-lisp
 ;;; -*- lexical-binding: t -*-
@@ -32,15 +33,8 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 (message "ok")
 #+END_SRC
 
-** Basic config
-#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
-;;; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
-;; NOTE: This must be placed in 'pre-early-init.el'.
-(setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
-(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
-#+END_SRC
-* Runtime-Internals
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Assist native compilation with compile-angel]]
+** Runtime-Internals
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Assist native compilation with compile-angel]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ;; Native compilation enhances Emacs performance by converting Elisp code into
   ;; native machine code, resulting in faster execution and improved
@@ -80,7 +74,8 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
   (compile-angel-on-load-mode 1))
 
 #+END_SRC
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-elpaca-package-manager][Elpaca package maanger]]
+
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-elpaca-package-manager][Elpaca package maanger]]
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
   ;; By default, minimal-emacs-package-initialize-and-refresh is set to t, which
   ;; makes minimal-emacs.d call the built-in package manager. Since Elpaca will
@@ -139,8 +134,15 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 
 #+END_SRC
 
-* Disk management
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Autorevert, recent files, minibuffer history ]]
+** Disk management
+*** Cache file locations
+#+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
+;;; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
+;; NOTE: This must be placed in 'pre-early-init.el'.
+(setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))
+#+END_SRC
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#optimization-native-compilation][Autorevert, recent files, minibuffer history ]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Auto-revert in Emacs is a feature that automatically updates the
 ;; contents of a buffer to reflect changes made to the underlying file
@@ -213,7 +215,7 @@ minimal-emacs.d suggested configurations are used heavily. Source is linked if a
 #+END_SRC
 
 minimal-emacs.d suggests the default auto save mode functionality, but I grew to like the function implemented in Emacs Bedrock
-** [[https://codeberg.org/ashton314/emacs-bedrock/raw/branch/main/init.el][Autosave to common flat directory (Emacs Bedrock)]]
+*** [[https://codeberg.org/ashton314/emacs-bedrock/raw/branch/main/init.el][Autosave to common flat directory (Emacs Bedrock)]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Don't litter file system with *~ backup files; put them all inside
 ;; ~/.emacs.d/backup or wherever
@@ -239,7 +241,7 @@ If the new path's directories does not exist, create them."
 
 #+END_SRC
 
-** Clipboard management
+*** Clipboard management
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Sends all new entries to the kill ring to the system clipboard
 (use-package clipetty
@@ -254,9 +256,9 @@ If the new path's directories does not exist, create them."
   (turn-on-pbcopy))
 
 #+END_SRC
-* Code augmentation
-** Linting
-*** [[https://github.com/jAMESCHERTI/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
+** Code augmentation
+*** Linting
+**** [[https://github.com/jAMESCHERTI/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; The stripspace Emacs package provides stripspace-local-mode, a minor mode
 ;; that automatically removes trailing whitespace and blank lines at the end of
@@ -285,8 +287,7 @@ If the new path's directories does not exist, create them."
   ;; editing experience without affecting cursor placement.
   (stripspace-restore-column t))
 #+END_SRC
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#asynchronous-code-formatting-without-cursor-disruption][Apheleia: aync code formatting]]
-
+**** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#asynchronous-code-formatting-without-cursor-disruption][Apheleia: aync code formatting]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Apheleia is an Emacs package designed to run code formatters (e.g., Shfmt,
 ;; Black and Prettier) asynchronously without disrupting the cursor position.
@@ -296,9 +297,8 @@ If the new path's directories does not exist, create them."
              apheleia-global-mode)
   :hook ((prog-mode . apheleia-mode)))
 #+END_SRC
-
-** Completion
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-lsp-servers-with-eglot-built-in][eglot]]
+*** Completion
+**** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-lsp-servers-with-eglot-built-in][eglot]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Set up the Language Server Protocol (LSP) servers using Eglot.
 (use-package eglot
@@ -307,7 +307,7 @@ If the new path's directories does not exist, create them."
              eglot-rename
              eglot-format-buffer))
 #+END_SRC
-**** pylsp setup
+**** TODO MOVE TO PYTHON pylsp setup
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Configure Eglot to enable or disable certain options for the pylsp server
 ;; in Python development. (Note that a third-party tool,
@@ -332,7 +332,7 @@ If the new path's directories does not exist, create them."
                          :rope_autoimport (:enabled :json-false)))))
 #+END_SRC
 
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
+**** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#tree-sitter-integration-better-syntax-highlighting][treesitter]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   ;; Tree-sitter in Emacs is an incremental parsing system introduced in Emacs 29
   ;; that provides precise, high-performance syntax highlighting. It supports a
@@ -347,7 +347,7 @@ If the new path's directories does not exist, create them."
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 #+END_SRC
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#efficient-template-expansion-with-snippets][yasnippet]]
+**** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#efficient-template-expansion-with-snippets][yasnippet]]
 
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; YASnippet is a template system designed that enhances text editing by
@@ -366,7 +366,7 @@ If the new path's directories does not exist, create them."
 
 #+END_SRC
 
-*** corfu
+**** corfu
 On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by synosaurus
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package popup :ensure t)
@@ -427,9 +427,9 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
   (add-hook 'completion-at-point-functions #'cape-file)
   (add-hook 'completion-at-point-functions #'cape-elisp-block))
 #+END_SRC
-** Generative AI
-* Buffers
-** Dirvish: modern file browser
+*** Generative AI
+** Buffers
+*** Dirvish: modern file browser
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Dirvish: drop-in replacement for dired
 (use-package dirvish
@@ -439,7 +439,7 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
 
 #+END_SRC
 
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs: sidebar filetree]]
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#treemacs-a-tree-layout-file-explorer-sidebar-file-explorer][treemacs: sidebar filetree]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; A file and project explorer for Emacs that displays a structured tree
 ;; layout, similar to file browsers in modern IDEs. It functions as a sidebar
@@ -544,7 +544,7 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
   (treemacs-hide-gitignored-files-mode nil))
 #+END_SRC
 
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#safely-terminating-unused-buffers][Terminate unused buffers]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (use-package buffer-terminator
       :ensure t
@@ -563,9 +563,9 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
       (buffer-terminator-mode 1))
 
 #+END_SRC
-** Minibuffer
-*** TODO Move minibuffer history here
-*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-vertico-consult-and-embark][Vertico, Consult, Embark]]
+*** Minibuffer
+**** TODO Move minibuffer history here
+**** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-vertico-consult-and-embark][Vertico, Consult, Embark]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Vertico provides a vertical completion interface, making it easier to
 ;; navigate and select from completion candidates (e.g., when `M-x` is pressed).
@@ -910,8 +910,7 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
     :commands undo-fu-session-global-mode
     :hook (after-init . undo-fu-session-global-mode))
 #+END_SRC
-
-*** TODO Split: [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-the-elisp-development-experience][Enhancing the Elisp development experience]]
+*** TODO Split this, it isn't elisp specific: [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#enhancing-the-elisp-development-experience][Enhancing the Elisp development experience]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Enables automatic indentation of code while typing
 (use-package aggressive-indent
@@ -962,8 +961,8 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
              elisp-refs-special
              elisp-refs-symbol))
 #+END_SRC
-* Discoverability
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar and disable tab bar]]
+** Discoverability
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar and disable tab bar]]
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
 ; Enable the menu-bar, the tool-bar, dialogs, the contextual menu, and tooltips
 (setq minimal-emacs-ui-features '(context-menu tool-bar menu-bar dialogs tooltips))
@@ -974,7 +973,7 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
 (setopt tab-bar-show nil)
 #+END_SRC
 
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#a-better-emacs-help-buffer][Helpful: better help buffer]]
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#a-better-emacs-help-buffer][Helpful: better help buffer]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; Helpful is an alternative to the built-in Emacs help that provides much more
 ;; contextual information.
@@ -996,7 +995,7 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
   (helpful-max-buffers 7))
 #+END_SRC
 
-** Display bound/free keys
+*** Display bound/free keys
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 ;; which-key: shows a popup of available keybindings when typing a long key
 ;; sequence (e.g. C-x ...)
@@ -1164,7 +1163,103 @@ TODO make jinx ignore org-babel source blocks
   (dolist (hook '(text-mode-hook conf-mode-hook))
   (add-hook hook #'jinx-mode))
 #+END_SRC
-* [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme: modus-operandi]]
+** Org
+*** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Base]]
+Config suggested by minimal-emacs
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  ;; Org mode is a major mode designed for organizing notes, planning, task
+  ;; management, and authoring documents using plain text with a simple and
+  ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
+  ;; scheduling, deadlines, time tracking, and exporting to multiple formats
+  ;; including HTML, LaTeX, PDF, and Markdown.
+  (use-package org
+      :ensure t
+      :commands (org-mode org-version)
+      :mode
+      ("\\.org\\'" . org-mode)
+      :custom
+      (org-hide-leading-stars t)
+      (org-startup-indented t)
+      (org-adapt-indentation nil)
+      (org-edit-src-content-indentation 0)
+      ;; (org-fontify-done-headline t)
+      ;; (org-fontify-todo-headline t)
+      ;; (org-fontify-whole-heading-line t)
+      ;; (org-fontify-quote-and-verse-blocks t)
+      (org-startup-truncated t)
+      :bind
+      (:map org-mode-map
+            ("C-M-;" . org-comment-dwim)   ;; pick some comfortable binding
+       ))
+
+#+END_SRC
+Trying org-modern again. The last time I tried it wasn't consistent about indentation
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package org-modern
+  :ensure t
+  :config
+ (setq org-modern-table nil)
+ (add-hook 'org-mode-hook #'org-modern-mode))
+#+END_SRC
+
+*** Transclusion
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+; Allow transclusion
+(use-package org-transclusion :ensure t)
+#+END_SRC
+*** Babel
+**** Auto-tangle
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Automatically tangle org-babel source blocks on save
+(use-package org-auto-tangle
+  :ensure t
+  :init
+  ;; The minor mode can also be automatically activated for a certain modes.
+  (add-hook 'org-mode-hook #'org-auto-tangle-mode))
+#+END_SRC
+*** Export
+*** Agenda
+*** Journal
+*** Citations
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package papis
+  :ensure (:host github :repo "papis/papis.el"))
+#+END_SRC
+*** Annotation
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+  (setq package-vc-allow-build-commands t)
+  (use-package reader
+    :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
+  	    :make "all"))
+#+END_SRC
+*** Calendar
+*** Homw
+I'm primarily using org mode for all of my notes. The only exception is the foss software db that I generate into markdown. (Maybe I'll publish it eventually)
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package howm
+  :ensure t
+  :init
+  ;; Format
+  ;(require 'howm-markdown) ;; Write notes in markdown-mode. (*1)
+  (require 'howm-org) ;; Write notes in Org-mode. (*2)
+  ;;
+  ;; Preferences
+  (setq howm-directory "/Users/jer/Library/CloudStorage/ProtonDrive-jerivl@pm.me-folder/org/howm") ;; Where to store the files?
+  (setq howm-follow-theme t) ;; Use your Emacs theme colors. (*3)
+  ;;
+  ;; Performance
+  (setq howm-menu-expiry-hours 1) ;; Cache menu N hours. (*4)
+  (setq howm-menu-refresh-after-save nil) ;; Speed up note saving. (*5)
+  )
+#+END_SRC
+*** Email
+*** Himalaya
+I use himalaya primarily because it allows me to reference any email with a one line cmd
++BEGIN_SRC emacs-lisp :tangle post-init.el
+;; Primary email application
+(use-package himalaya :ensure t)
+#+END_SRC
+* [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package lambda-themes
   :ensure (:host github :repo "lambda-emacs/lambda-themes")
@@ -1237,94 +1332,4 @@ TODO make jinx ignore org-babel source blocks
   :ensure t
   :config
   ;(load-theme 'white-sand t))
-#+END_SRC
-* Org
-** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#configuring-org-mode][Base]]
-Config suggested by minimal-emacs
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-  ;; Org mode is a major mode designed for organizing notes, planning, task
-  ;; management, and authoring documents using plain text with a simple and
-  ;; expressive markup syntax. It supports hierarchical outlines, TODO lists,
-  ;; scheduling, deadlines, time tracking, and exporting to multiple formats
-  ;; including HTML, LaTeX, PDF, and Markdown.
-  (use-package org
-      :ensure t
-      :commands (org-mode org-version)
-      :mode
-      ("\\.org\\'" . org-mode)
-      :custom
-      (org-hide-leading-stars t)
-      (org-startup-indented t)
-      (org-adapt-indentation nil)
-      (org-edit-src-content-indentation 0)
-      ;; (org-fontify-done-headline t)
-      ;; (org-fontify-todo-headline t)
-      ;; (org-fontify-whole-heading-line t)
-      ;; (org-fontify-quote-and-verse-blocks t)
-      (org-startup-truncated t)
-      :bind
-      (:map org-mode-map
-            ("C-M-;" . org-comment-dwim)   ;; pick some comfortable binding
-       ))
-
-#+END_SRC
-Trying org-modern again. The last time I tried it wasn't consistent about indentation
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package org-modern
-  :ensure t
-  :config
- (setq org-modern-table nil)
- (add-hook 'org-mode-hook #'org-modern-mode))
-#+END_SRC
-
-** Transclusion
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-; Allow transclusion
-(use-package org-transclusion :ensure t)
-#+END_SRC
-** Babel
-*** Auto-tangle
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; Automatically tangle org-babel source blocks on save
-(use-package org-auto-tangle
-  :ensure t
-  :init
-  ;; The minor mode can also be automatically activated for a certain modes.
-  (add-hook 'org-mode-hook #'org-auto-tangle-mode))
-#+END_SRC
-** Export
-** Agenda
-** Journal
-** Citations
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package papis
-  :ensure (:host github :repo "papis/papis.el"))
-#+END_SRC
-* Calendar
-
-* Homw
-I'm primarily using org mode for all of my notes. The only exception is the foss software db that I generate into markdown. (Maybe I'll publish it eventually)
-#+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package howm
-  :ensure t
-  :init
-  ;; Format
-  ;(require 'howm-markdown) ;; Write notes in markdown-mode. (*1)
-  (require 'howm-org) ;; Write notes in Org-mode. (*2)
-  ;;
-  ;; Preferences
-  (setq howm-directory "/Users/jer/Library/CloudStorage/ProtonDrive-jerivl@pm.me-folder/org/howm") ;; Where to store the files?
-  (setq howm-follow-theme t) ;; Use your Emacs theme colors. (*3)
-  ;;
-  ;; Performance
-  (setq howm-menu-expiry-hours 1) ;; Cache menu N hours. (*4)
-  (setq howm-menu-refresh-after-save nil) ;; Speed up note saving. (*5)
-  )
-#+END_SRC
-* Email
-** Himalaya
-I use himalaya primarily because it allows me to reference any email with a one line cmd
-+BEGIN_SRC emacs-lisp :tangle post-init.el
-;; Primary email application
-(use-package himalaya :ensure t)
 #+END_SRC
