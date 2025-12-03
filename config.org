@@ -961,6 +961,11 @@ On emacs <31, popup is needed for TTY autocomplete on point. Also depended on by
              elisp-refs-special
              elisp-refs-symbol))
 #+END_SRC
+*** Undo tree
+Vundo uses the standard undo/redo commands whereas undo-tree doesn't
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package vundo :ensure t)
+#+END_SRC
 ** Discoverability
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar and disable tab bar]]
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
