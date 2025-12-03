@@ -3,7 +3,6 @@
 
 #+transclude: [[file:README.md][README.md]]
 
-
 minimal-emacs.d suggested configurations are used heavily. Source is linked if available.
 * Base config
 ** Boilerplate.
@@ -256,7 +255,7 @@ If the new path's directories does not exist, create them."
   (turn-on-pbcopy))
 
 #+END_SRC
-** Code augmentation
+** Code correction/augmentation
 *** Linting
 **** [[https://github.com/jAMESCHERTI/minimal-emacs.d?tab=readme-ov-file#automatic-removal-of-trailing-whitespace-on-save][Strip trailing whitespace]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
@@ -966,6 +965,15 @@ Vundo uses the standard undo/redo commands whereas undo-tree doesn't
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package vundo :ensure t)
 #+END_SRC
+** Version Control
+Git
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+(use-package magit :ensure t )
+#+END_SRC
+Jujutsu
+#+BEGIN_SRC emacs-lisp :tangle post-init.el
+;(use-package majutsu :ensure (:host github :repo "0WD0/majutsu"))
+#+END_SRC
 ** Discoverability
 *** [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#how-to-enable-the-menu-bar-the-tool-bar-dialogs-the-contextual-menu-and-tooltips][Enable menu bar and disable tab bar]]
 #+BEGIN_SRC emacs-lisp :tangle pre-early-init.el
@@ -1111,12 +1119,12 @@ Sorting CSS attributes as part of linting is nice
 
 ** Nix
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package nix-mode
-  :ensure t
-  :mode ("\\.nix\\'" "\\.nix.in\\'")
-  :config
-  (setq truncate-lines t)
-  (setq word-wrap nil))
+;(use-package nix-mode
+;  :ensure t
+;  :mode ("\\.nix\\'" "\\.nix.in\\'")
+;  :config
+;  (setq truncate-lines t)
+;  (setq word-wrap nil))
 ;(use-package nix-drv-mode
 ;  :ensure t
 ;  :after nix-mode
@@ -1133,13 +1141,12 @@ Sorting CSS attributes as part of linting is nice
 (use-package nix-ts-mode :ensure t)
 #+END_SRC
 ** Text
-*** Write-good-mode
+*** TODO Move Write-good-mode to code-augmentation
 Modern implementation of [[https://matt.might.net/articles/shell-scripts-for-passive-voice-weasel-words-duplicates/][weasle word finder]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package writegood-mode :ensure t)
 #+END_SRC
-*** Dictionary
-TODO Currently waiting on a solution to https://github.com/jamescherti/quick-sdcv.el/issues/3
+*** TODO Dictionary: Currently waiting on a solution to https://github.com/jamescherti/quick-sdcv.el/issues/3
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
 (use-package quick-sdcv
   :ensure t
@@ -1227,15 +1234,14 @@ Trying org-modern again. The last time I tried it wasn't consistent about indent
 *** Journal
 *** Citations
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package papis
-  :ensure (:host github :repo "papis/papis.el"))
+(use-package papis :ensure (:host github :repo "papis/papis.el"))
 #+END_SRC
 *** Annotation
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
   (setq package-vc-allow-build-commands t)
-  (use-package reader
-    :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
-  	    :make "all"))
+  ;(use-package reader
+  ;  :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
+  ;	    :make "all"))
 #+END_SRC
 *** Calendar
 *** Homw
@@ -1266,8 +1272,7 @@ I use himalaya primarily because it allows me to reference any email with a one 
 #+END_SRC
 * [[https://github.com/jamescherti/minimal-emacs.d?tab=readme-ov-file#changing-the-default-theme][Theme]]
 #+BEGIN_SRC emacs-lisp :tangle post-init.el
-(use-package lambda-themes
-  :ensure (:host github :repo "lambda-emacs/lambda-themes")
+(use-package lambda-themes :ensure (:host github :repo "lambda-emacs/lambda-themes")
   :custom
   (lambda-themes-set-italic-comments t)
   (lambda-themes-set-italic-keywords t)
